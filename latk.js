@@ -6,6 +6,7 @@ function jsonToGp(data) {
         var layer = new LatkLayer();
         if (data.layers[h].name != null) {
             layer.name = data.layers[h].name;
+        } else {
             layer.name = "WebVR Layer " + (h+1);
         }
         var frameCount = data.layers[h].frames.length;
