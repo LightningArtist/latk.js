@@ -361,23 +361,6 @@ function loadJSON(filepath, callback) {
     xobj.send(null);  
 }
 
-/*
-JSZipUtils.getBinaryContent(animationPath, function(err, data) {
-    if (err) {
-        throw err; // or handle err
-    }
-
-    var zip = new JSZip();
-    zip.loadAsync(data).then(function () {
-        var fileNameOrig = animationPath.split('\\').pop().split('/').pop();
-        var fileName = fileNameOrig.split('.')[0] + ".json";
-        zip.file(fileName).async("string").then(function(response) {
-            jsonToGp(JSON.parse(response).grease_pencil[0]);
-        });
-    });
-});
-*/
-
 class LatkLayer {
     constructor() {
         this.name = "";
@@ -403,7 +386,95 @@ class LatkFrame {
 }
 
 class LatkStroke {
-    constructor() {
-        //
+
+    constructor(x, y, z) {
+        this.points = [];
+        this.smoothReps = 10;
+        this.splitReps = 2;
+        this.geometry;
+        this.mesh;
+   	    this.addPoints(x, y, z);
+        this.createStroke();
     }
+
+	rebuildGeometry() {
+	    this.geometry = new THREE.Geometry();
+	    this.geometry.dynamic = true;
+	    for (let i=0; i<this.points.length; i++) {
+	        this.geometry.vertices.push(this.points[i]);
+	    }
+	    this.geometry.verticesNeedUpdate = true;
+	    this.geometry.__dirtyVertices = true; 
+	}
+
+	addPoints(x, y, z) {
+	    this.points.push(new THREE.Vector3(x, y, z));
+	    this.rebuildGeometry();
+	}
+
+	clearStroke() {
+	    try {
+	        scene.remove(this.mesh);
+	    } catch (e) { }       
+	}
+
+	createStroke() {
+	    let line = new THREE.MeshLine();
+	    line.setGeometry(this.geometry);
+	    this.mesh = new THREE.Mesh(line.geometry, createUniqueMtl([0.667, 0.667, 1]));
+	    this.mesh.name = "stroke" + strokeCounter;
+	    scene.add(this.mesh);
+	}
+
+	updateMesh(x, y, z) {
+        this.clearStroke();
+	    this.addPoints(x, y, z);
+        this.createStroke();
+	}
+
+	refreshMesh() {
+        this.clearStroke();
+        this.rebuildGeometry();
+        this.createStroke();   
+	}
+
+    smooth() {
+        let weight = 18;
+        let scale = 1.0 / (weight + 2);
+        let nPointsMinusTwo = this.points.length - 2;
+        let lower, upper, center;
+
+        for (let i = 1; i < nPointsMinusTwo; i++) {
+            lower = this.points[i-1];
+            center = this.points[i];
+            upper = this.points[i+1];
+
+            center.x = (lower.x + weight * center.x + upper.x) * scale;
+            center.y = (lower.y + weight * center.y + upper.y) * scale;
+            center.z = (lower.z + weight * center.z + upper.z) * scale;
+            this.points[i] = center;
+        }
+    }
+
+    split() {
+        for (let i = 1; i < this.points.length; i+=2) {
+            let x = (this.points[i].x + this.points[i-1].x) / 2;
+            let y = (this.points[i].y + this.points[i-1].y) / 2;
+            let z = (this.points[i].z + this.points[i-1].z) / 2;
+            let p = new THREE.Vector3(x, y, z);
+            this.points.splice(i, 0, p);
+        }
+    }
+
+    refine() {
+        for (let i=0; i<this.splitReps; i++){
+            this.split();   
+            this.smooth();  
+        }
+        for (let i=0; i<this.smoothReps - this.splitReps; i++){
+            this.smooth();      
+        }
+		this.refreshMesh();   
+    }
+
 }
