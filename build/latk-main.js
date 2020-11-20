@@ -268,17 +268,19 @@ class Latk {
                                     let x = jsonPoint["co"][0];
                                     let y;
                                     let z;
-                                    if (yUp === false):;
+                                    if (yUp === false) {
                                         y = jsonPoint["co"][2];
                                         z = jsonPoint["co"][1];
-                                    else:;
+                                    } else {
                                         y = jsonPoint["co"][1];
                                         z = jsonPoint["co"][2];
+                                    }
                                     // ~
-                                    if (useScaleAndOffset === true):;
+                                    if (useScaleAndOffset === true) {
                                         x = (x * globalScale[0]) + globalOffset[0];
                                         y = (y * globalScale[1]) + globalOffset[1];
                                         z = (z * globalScale[2]) + globalOffset[2];
+                                    }
                                     //~                                                                                             ;
                                     pressure = 1;
                                     strength = 1;
@@ -326,8 +328,8 @@ class Latk {
             sbHeader = [] // string array;
             sbHeader.push("\t\t\t\t\t\"frames\": [");
             sb.push("\n".join(sbHeader));
-;
-            for h, frame in enumerate(layer.frames):;
+
+            for h, frame in enumerate(layer.frames) {
                 sbbHeader = [] // string array;
                 sbbHeader.push("\t\t\t\t\t\t{");
                 sbbHeader.push("\t\t\t\t\t\t\t\"strokes\": [");
@@ -351,10 +353,10 @@ class Latk {
 
                     sbb.push("\t\t\t\t\t\t\t\t\t\"color\": [" + color[0] + ", " + color[1] + ", " + color[2] + ", " + color[3] + "],");
                     sbb.push("\t\t\t\t\t\t\t\t\t\"fill_color\": [" + fill_color[0] + ", " + fill_color[1] + ", " + fill_color[2] + ", " + fill_color[3] + "],");
-;
+
                     if (stroke.points.length > 0) {
                         sbb.push("\t\t\t\t\t\t\t\t\t\"points\": [");
-                        for j, point in enumerate(stroke.points):;
+                        for j, point in enumerate(stroke.points) {
                             x = point.co[0];
                             y = undefined;
                             z = undefined;
@@ -405,10 +407,13 @@ class Latk {
                     sbFooter.push("\t\t\t\t\t\t\t]");
                     sbFooter.push("\t\t\t\t\t\t},");
                 }
+
                 sb.push("\n".join(sbFooter));
-            
+            }
+
             FINAL_LAYER_LIST.push("\n".join(sb));
-        
+        }
+
         s = [] // string;
         s.push("{");
         s.push("\t\"creator\": \"latk.py\",");
@@ -435,8 +440,9 @@ class Latk {
         s.push("\t\t}");
         s.push("\t]");
         s.push("}");
-        ;
-        fileType = this.getExtFromFileName(filepath);
+        
+        //fileType = this.getExtFromFileName(filepath);
+        /*
         if (zipped === true or fileType === "latk" or fileType === "zip") {
             filepathNoExt = this.getFileNameNoExt(filepath);
             imz = new InMemoryZip();
@@ -447,6 +453,9 @@ class Latk {
                 f.write("\n".join(s));
                 f.closed;
         }
+        */
+
+        download("saved_" + Date.now() + ".json", s.join("\n"));
     }
 
     clean(epsilon=0.01) {
@@ -661,7 +670,7 @@ class Latk {
         let lastFrame = lastLayer.frames[len(lastLayer.frames)-1];
         lastFrame.strokes.push(stroke);
     }
-;
+
     setPoints(points, color) {
         if (color === undefined) color = (0,0,0,1);
 
@@ -718,6 +727,7 @@ class Latk {
         return int(this.remap(value, min1, max1, min2, max2));
     }
 
+    /*
     writeTextFile(name="test.txt", lines=undefined) {
         file = open(name,"w") ;
         for line in lines:;
@@ -729,6 +739,7 @@ class Latk {
         file = open(name, "r") ;
         return file.read() ;
     }
+    */
 
 }
 
