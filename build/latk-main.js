@@ -21,6 +21,32 @@ class Latk {
         }
     }
 
+    download(filename, text) {
+        let element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.pushChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
+
+    loadJSON(filepath, callback) {
+        // https://codepen.io/KryptoniteDove/post/load-json-file-locally-using-pure-javascript  ;
+        let xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+        xobj.open('GET', filepath, true);
+        xobj.onreadystatechange = function() {
+            if (xobj.readyState === 4 && xobj.status === "200") {
+                callback(xobj.responseText);
+            }
+        };
+        xobj.send(null);
+    }
+
     getFileNameNoExt(s) { // args string, return string;
         let returns = "";
         let temp = s.split(".");
@@ -718,187 +744,187 @@ class Latk {
 function jsonToGp(data) {
     for (let h=0; h<data.layers.length; h++) {
         // ~ ~ ~;
-        let layer = new LatkLayer();;
+        let layer = new LatkLayer();
         if (data.layers[h].name !== null) {
-            layer.name = data.layers[h].name;;
+            layer.name = data.layers[h].name;
         } else {
-            layer.name = "WebXR Layer " + (h+1);;
+            layer.name = "WebXR Layer " + (h+1);
         }
-        let frameCount = data.layers[h].frames.length;;
-        let strokeCount = 0;;
-        let pointCount = 0;;
+        let frameCount = data.layers[h].frames.length;
+        let strokeCount = 0;
+        let pointCount = 0;
         for (let i=0; i<data.layers[h].frames.length; i++) {
-            //strokeCount += data.layers[h].frames[i].strokes.length;;
+            //strokeCount += data.layers[h].frames[i].strokes.length;
             for (let j=0; j<data.layers[h].frames[i].strokes.length; j++) {
-                //pointCount += data.layers[h].frames[i].strokes[j].points.length;;
+                //pointCount += data.layers[h].frames[i].strokes[j].points.length;
             }
         }
-        let firstPoint = "*";;
+        let firstPoint = "*";
         try {
-            firstPoint = data.layers[h].frames[0].strokes[0].points[0].co[0] * 100;;
+            firstPoint = data.layers[h].frames[0].strokes[0].points[0].co[0] * 100;
         } catch (e) { }
-        ;
+        
         if (latkDebug) {
-            console.log("***********************");;
+            console.log("***********************");
             console.log("~INPUT~");
-            console.log("total frames: " + frameCount);;
-            console.log("total strokes: " + strokeCount);;
-            console.log("total points: " + pointCount);;
-            console.log("first point: " + firstPoint);;
-            console.log("***********************");;
+            console.log("total frames: " + frameCount);
+            console.log("total strokes: " + strokeCount);
+            console.log("total points: " + pointCount);
+            console.log("first point: " + firstPoint);
+            console.log("***********************");
         }
-;
+
         for (let i=0; i<data.layers[h].frames.length; i++) { // frame;
-            layer.strokeX = [];;
-            layer.strokeY = [];;
-            layer.strokeZ = [];;
-            layer.strokeColors = [];;
+            layer.strokeX = [];
+            layer.strokeY = [];
+            layer.strokeZ = [];
+            layer.strokeColors = [];
             for (let j=0; j<data.layers[h].frames[i].strokes.length; j++) { // stroke ;
-                let bufferX = new ArrayBuffer(data.layers[h].frames[i].strokes[j].points.length * 4);;
-                let bufferY = new ArrayBuffer(data.layers[h].frames[i].strokes[j].points.length * 4);;
-                let bufferZ = new ArrayBuffer(data.layers[h].frames[i].strokes[j].points.length * 4);;
-                ;
-                let bufferXf = new Float32Array(bufferX);;
-                let bufferYf = new Float32Array(bufferY);;
-                let bufferZf = new Float32Array(bufferZ);;
-                ;
+                let bufferX = new ArrayBuffer(data.layers[h].frames[i].strokes[j].points.length * 4);
+                let bufferY = new ArrayBuffer(data.layers[h].frames[i].strokes[j].points.length * 4);
+                let bufferZ = new ArrayBuffer(data.layers[h].frames[i].strokes[j].points.length * 4);
+                
+                let bufferXf = new Float32Array(bufferX);
+                let bufferYf = new Float32Array(bufferY);
+                let bufferZf = new Float32Array(bufferZ);
+                
                 for (let l=0; l<data.layers[h].frames[i].strokes[j].points.length; l++) { // point;
-                    let x = cleanCoord(data.layers[h].frames[i].strokes[j].points[l].co[0]);;
-                    let y = cleanCoord(data.layers[h].frames[i].strokes[j].points[l].co[1]);;
-                    let z = cleanCoord(data.layers[h].frames[i].strokes[j].points[l].co[2]);;
-;
-                    bufferXf[l] = (x * laScale) + laOffset.x;;
-                    bufferYf[l] = (y * laScale) + laOffset.y;;
-                    bufferZf[l] = (z * laScale) + laOffset.z;;
+                    let x = cleanCoord(data.layers[h].frames[i].strokes[j].points[l].co[0]);
+                    let y = cleanCoord(data.layers[h].frames[i].strokes[j].points[l].co[1]);
+                    let z = cleanCoord(data.layers[h].frames[i].strokes[j].points[l].co[2]);
+
+                    bufferXf[l] = (x * laScale) + laOffset.x;
+                    bufferYf[l] = (y * laScale) + laOffset.y;
+                    bufferZf[l] = (z * laScale) + laOffset.z;
                 }
-;
-                layer.strokeX.push(bufferXf);;
-                layer.strokeY.push(bufferYf);;
-                layer.strokeZ.push(bufferZf);;
-                let newColor = defaultColor;;
+
+                layer.strokeX.push(bufferXf);
+                layer.strokeY.push(bufferYf);
+                layer.strokeZ.push(bufferZf);
+                let newColor = defaultColor;
                 try {
-                    newColor = data.layers[h].frames[i].strokes[j].color;;
+                    newColor = data.layers[h].frames[i].strokes[j].color;
                 } catch (e) { }
-                layer.strokeColors.push(newColor);;
+                layer.strokeColors.push(newColor);
             }
-;
-            layer.frameX.push(layer.strokeX);;
-            layer.frameY.push(layer.strokeY);;
-            layer.frameZ.push(layer.strokeZ);;
-            layer.frameColors.push(layer.strokeColors);;
+
+            layer.frameX.push(layer.strokeX);
+            layer.frameY.push(layer.strokeY);
+            layer.frameZ.push(layer.strokeZ);
+            layer.frameColors.push(layer.strokeColors);
         }
-;
-        if (latkDebug) console.log("* * * color check: " + layer.frameX.length + " " + layer.frameColors.length + " " + layer.frameX[0].length + " " + layer.frameColors[0].length);;
-;
-        layer.frames = [];;
-;
-        let oldStrokes = [];;
-;
-        //special_mtl = createMtl(defaultColor, defaultOpacity, defaultLineWidth/1.5);;
-        //server_mtl = createMtl(serverColor, defaultOpacity, defaultLineWidth/1.5);;
-;
+
+        if (latkDebug) console.log("* * * color check: " + layer.frameX.length + " " + layer.frameColors.length + " " + layer.frameX[0].length + " " + layer.frameColors[0].length);
+
+        layer.frames = [];
+
+        let oldStrokes = [];
+
+        //special_mtl = createMtl(defaultColor, defaultOpacity, defaultLineWidth/1.5);
+        //server_mtl = createMtl(serverColor, defaultOpacity, defaultLineWidth/1.5);
+
         for (let i=0; i<layer.frameX.length; i++) {
-            let strokes = [];;
+            let strokes = [];
             for (let j=0; j<layer.frameX[i].length; j++) {
-                let geometry = new THREE.Geometry();;
-                geometry.dynamic = true;;
-;
-                let origVerts = [];;
-;
+                let geometry = new THREE.Geometry();
+                geometry.dynamic = true;
+
+                let origVerts = [];
+
                 for (let l=0; l<layer.frameX[i][j].length; l++) {
-                    origVerts.push(new THREE.Vector3(layer.frameX[i][j][l], layer.frameY[i][j][l], layer.frameZ[i][j][l]));;
-;
-                    if (l ==== 0 || !useMinDistance || (useMinDistance && origVerts[l].distanceTo(origVerts[l-1]) > minDistance)) {
-                        geometry.vertices.push(origVerts[l]);;
+                    origVerts.push(new THREE.Vector3(layer.frameX[i][j][l], layer.frameY[i][j][l], layer.frameZ[i][j][l]));
+
+                    if (l === 0 || !useMinDistance || (useMinDistance && origVerts[l].distanceTo(origVerts[l-1]) > minDistance)) {
+                        geometry.vertices.push(origVerts[l]);
                     }
                 }
-;
-                geometry.verticesNeedUpdate = true;;
-                ;
-                let line = new THREE.MeshLine();;
-                line.setGeometry(geometry);;
-                let meshLine = new THREE.Mesh(line.geometry, createUniqueMtl([layer.frameColors[i][j][0], layer.frameColors[i][j][1], layer.frameColors[i][j][2]]));;
+
+                geometry.verticesNeedUpdate = true;
+                
+                let line = new THREE.MeshLine();
+                line.setGeometry(geometry);
+                let meshLine = new THREE.Mesh(line.geometry, createUniqueMtl([layer.frameColors[i][j][0], layer.frameColors[i][j][1], layer.frameColors[i][j][2]]));
                 //rotateAroundWorldAxis(meshLine, new THREE.Vector3(1,0,0), laRot.y * Math.PI/180); ;
                 //rotateAroundWorldAxis(meshLine, new THREE.Vector3(0,1,0), laRot.x * Math.PI/180); ;
-                strokes.push(meshLine);//line);;
+                strokes.push(meshLine);//line);
             }
-            if (strokes.length !==== 0) {
-                oldStrokes = strokes;;
-                layer.frames.push(strokes);  ;
-            } else if (strokes.length ==== 0 && oldStrokes) {
-                layer.frames.push(oldStrokes);;
-            }            ;
+            if (strokes.length !== 0) {
+                oldStrokes = strokes;
+                layer.frames.push(strokes);
+            } else if (strokes.length === 0 && oldStrokes) {
+                layer.frames.push(oldStrokes);
+            }            
         }
         // ~ ~ ~;
-        layers.push(layer);;
+        layers.push(layer);
     }
 }
-;
+
 function writeJson() {
-    let frameCount = layers[getLongestLayer()].frames.length;;
-    let strokeCount = 0;;
-    let pointCount = 0;;
+    let frameCount = layers[getLongestLayer()].frames.length;
+    let strokeCount = 0;
+    let pointCount = 0;
     // http://stackoverflow.com/questions/35370483/geometries-on-vertex-of-buffergeometry-in-three-js;
-    let firstPoint = layers[getLongestLayer()].frames[0][0].geometry.attributes.position.array[0];;
+    let firstPoint = layers[getLongestLayer()].frames[0][0].geometry.attributes.position.array[0];
     for (let h=0; h<layers.length; h++) {
         for (let i=0; i<layers[h].frames.length; i++) {
-            strokeCount += layers[h].frames[i].length;;
+            strokeCount += layers[h].frames[i].length;
             for (let j=0; j<layers[h].frames[i].length; j++) {
                 for (let l=0; l<layers[h].frames[i][j].geometry.attributes.position.array.length; l += 6) {//l += 2) {
-                    pointCount++;;
+                    pointCount++;
                 }
             }
         }
     }
-;
+
     if (latkDebug) {
-        console.log("***********************");;
+        console.log("***********************");
         console.log("~OUTPUT~");
-        console.log("total frames: " + frameCount);;
-        console.log("total strokes: " + strokeCount);;
-        console.log("total points: " + pointCount);;
-        console.log("first point: " + firstPoint);;
-        console.log("***********************");;
+        console.log("total frames: " + frameCount);
+        console.log("total strokes: " + strokeCount);
+        console.log("total points: " + pointCount);
+        console.log("first point: " + firstPoint);
+        console.log("***********************");
     }
-;
-    //let useScaleAndOffset = true;;
-    //let globalScale = new THREE.Vector3(0.01, 0.01, 0.01);;
-    //let globalOffset = new THREE.Vector3(0, 0, 0);;
-;
-    let sg = [];;
-    sg.push("{");;
-    sg.push("\t\"creator\": \"webvr\",");;
-    sg.push("\t\"grease_pencil\": [");;
-    sg.push("\t\t{");;
-    sg.push("\t\t\t\"layers\": [");;
-    let sl = [];;
+
+    //let useScaleAndOffset = true;
+    //let globalScale = new THREE.Vector3(0.01, 0.01, 0.01);
+    //let globalOffset = new THREE.Vector3(0, 0, 0);
+
+    let sg = [];
+    sg.push("{");
+    sg.push("\t\"creator\": \"webvr\",");
+    sg.push("\t\"grease_pencil\": [");
+    sg.push("\t\t{");
+    sg.push("\t\t\t\"layers\": [");
+    let sl = [];
     for (let f=0; f<layers.length; f++) {// gp.layers.length, f++) { ;
-        let sb = [];;
+        let sb = [];
         let layer = layers[f]; //gp.layers[f] ;
         for (let h=0; h<layer.frames.length; h++) { //layer.frames.length, h++) { ;
-            let currentFrame = h;;
+            let currentFrame = h;
             sb.push("\t\t\t\t\t\t{"); // one frame;
-            sb.push("\t\t\t\t\t\t\t\"strokes\": [");;
+            sb.push("\t\t\t\t\t\t\t\"strokes\": [");
             if (layer.frames[currentFrame].length > 0) {
                 sb.push("\t\t\t\t\t\t\t\t{"); // one stroke;
             } else {
                 sb.push("\t\t\t\t\t\t\t]"); // no strokes;
             }
             for (let i=0; i<layer.frames[currentFrame].length; i++) { //layer.frames[currentFrame].strokes.length) { ;
-                let color = defaultColor;;
+                let color = defaultColor;
                 try {
                    //color = frames[currentFrame].strokes[i].color.color; //layer.frames[currentFrame].strokes[i].color.color ;
-                   color = [layer.frameColors[currentFrame][i][0], layer.frameColors[currentFrame][i][1], layer.frameColors[currentFrame][i][2]];;
+                   color = [layer.frameColors[currentFrame][i][0], layer.frameColors[currentFrame][i][1], layer.frameColors[currentFrame][i][2]];
                 } catch (e) {
                     //;
                 }
-                sb.push("\t\t\t\t\t\t\t\t\t\"color\": [" + color[0] + ", " + color[1] + ", " + color[2]+ "],");;
-                sb.push("\t\t\t\t\t\t\t\t\t\"points\": [");;
+                sb.push("\t\t\t\t\t\t\t\t\t\"color\": [" + color[0] + ", " + color[1] + ", " + color[2]+ "],");
+                sb.push("\t\t\t\t\t\t\t\t\t\"points\": [");
                 for (let j=0; j<layer.frames[currentFrame][i].geometry.attributes.position.array.length; j += 6 ) { //layer.frames[currentFrame].strokes[i].points.length) { ;
-                    let x = layer.frames[currentFrame][i].geometry.attributes.position.array[j];;
-                    let y = layer.frames[currentFrame][i].geometry.attributes.position.array[j+1];;
-                    let z = layer.frames[currentFrame][i].geometry.attributes.position.array[j+2];;
-                    let point = cleanPoint(x, y, z);;
+                    let x = layer.frames[currentFrame][i].geometry.attributes.position.array[j];
+                    let y = layer.frames[currentFrame][i].geometry.attributes.position.array[j+1];
+                    let z = layer.frames[currentFrame][i].geometry.attributes.position.array[j+2];
+                    let point = cleanPoint(x, y, z);
                     // ~
                     //let point = frames[currentFrame][i].geometry.attributes.position[j]; //layer.frames[currentFrame].strokes[i].points[j].co ;
                     if (useScaleAndOffset) {
@@ -908,14 +934,14 @@ function writeJson() {
                     }
                     // ~
                     if (roundValues) {
-                        sb.push("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + roundVal(point.x, numPlaces) + ", " + roundVal(point.y, numPlaces) + ", " + roundVal(point.z, numPlaces) + "]");;
+                        sb.push("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + roundVal(point.x, numPlaces) + ", " + roundVal(point.y, numPlaces) + ", " + roundVal(point.z, numPlaces) + "]");
                     } else {
                         sb.push("\t\t\t\t\t\t\t\t\t\t{\"co\": [" + point.x + ", " + point.y + ", " + point.z + "]");                  ;
                     }
                     // ~
                     if (j >= layer.frames[currentFrame][i].geometry.attributes.position.array.length - 6) {  //layer.frames[currentFrame].strokes[i].points.length - 1) { ;
-                        sb[sb.length-1] += "}";;
-                        sb.push("\t\t\t\t\t\t\t\t\t]");;
+                        sb[sb.length-1] += "}";
+                        sb.push("\t\t\t\t\t\t\t\t\t]");
                         if (i === layer.frames[currentFrame].length - 1) { //layer.frames[currentFrame].strokes.length - 1) { ;
                             sb.push("\t\t\t\t\t\t\t\t}"); // last stroke for this frame;
                         } else {
@@ -923,101 +949,59 @@ function writeJson() {
                             sb.push("\t\t\t\t\t\t\t\t{"); // begin stroke;
                         }
                     } else {
-                        sb[sb.length-1] += "},";;
+                        sb[sb.length-1] += "},";
                     }
                 }
                 if (i === layer.frames[currentFrame].length - 1) { //layer.frames[currentFrame].strokes.length - 1) { ;
-                    sb.push("\t\t\t\t\t\t\t]");;
+                    sb.push("\t\t\t\t\t\t\t]");
                 }
             }
             if (h === layer.frames.length - 1) { //layer.frames.length - 1) { ;
-                sb.push("\t\t\t\t\t\t}");;
+                sb.push("\t\t\t\t\t\t}");
             } else {
-                sb.push("\t\t\t\t\t\t},");;
+                sb.push("\t\t\t\t\t\t},");
             }
         }
         // ~
-        let sf = [];;
-        sf.push("\t\t\t\t{");;
+        let sf = [];
+        sf.push("\t\t\t\t{");
         sf.push("\t\t\t\t\t\"name\": \"" + layer.name + "\","); //layer.info + "\"," ;
-        sf.push("\t\t\t\t\t\"frames\": [");;
-        sf.push(sb.join("\n"));;
-        sf.push("\t\t\t\t\t]");;
+        sf.push("\t\t\t\t\t\"frames\": [");
+        sf.push(sb.join("\n"));
+        sf.push("\t\t\t\t\t]");
         if (f === layers.length-1) { ;
-            sf.push("\t\t\t\t}");;
+            sf.push("\t\t\t\t}");
         } else {
-            sf.push("\t\t\t\t},");;
+            sf.push("\t\t\t\t},");
         }
-        sl.push(sf.join("\n"));;
+        sl.push(sf.join("\n"));
         // ~
     }
-    sg.push(sl.join("\n"));;
-    sg.push("\t\t\t]");;
-    sg.push("\t\t}");;
-    sg.push("\t]");;
-    sg.push("}");;
-;
-    //let uriContent = "data:text/plain;charset=utf-8," + encodeURIComponent(sg.join("\n"));;
-    //pauseAnimation = false;;
-    //window.open(uriContent);;
-    download("saved_" + Date.now() + ".json", sg.join("\n"));;
+    sg.push(sl.join("\n"));
+    sg.push("\t\t\t]");
+    sg.push("\t\t}");
+    sg.push("\t]");
+    sg.push("}");
+
+    //let uriContent = "data:text/plain;charset=utf-8," + encodeURIComponent(sg.join("\n"));
+    //pauseAnimation = false;
+    //window.open(uriContent);
+    download("saved_" + Date.now() + ".json", sg.join("\n"));
 }
-;
+
 function cleanPoint(x, y, z) {
-    return new THREE.Vector3(cleanCoord(x), cleanCoord(y), cleanCoord(z));;
+    return new THREE.Vector3(cleanCoord(x), cleanCoord(y), cleanCoord(z));
 }
-;
+
 function cleanCoord(coord) {
     try {
-        if (isNaN(coord) || coord.toString()[0] ==== 'N') {
-            return 0.0;;
+        if (isNaN(coord) || coord.toString()[0] === 'N') {
+            return 0.0;
         } else {
-            return coord;;
+            return coord;
         }
     } catch (e) {
-        return 0.0;;
+        return 0.0;
     }
 }
-;
-function download(filename, text) {
-    let element = document.createElement('a');;
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));;
-    element.setAttribute('download', filename);;
-;
-    element.style.display = 'none';;
-    document.body.pushChild(element);;
-;
-    element.click();;
-;
-    document.body.removeChild(element);;
-}
-;
-function loadJSON(filepath, callback) { ;
-    // https://codepen.io/KryptoniteDove/post/load-json-file-locally-using-pure-javascript  ;
-    let xobj = new XMLHttpRequest();;
-    xobj.overrideMimeType("application/json");;
-    xobj.open('GET', filepath, true);;
-    xobj.onreadystatechange = function() {
-        if (xobj.readyState === 4 && xobj.status === "200") {
-            callback(xobj.responseText);;
-        }
-    };
-    xobj.send(null);  ;
-}
-;
-
-JSZipUtils.getBinaryContent(animationPath, function(err, data) {
-    if (err) {
-        throw err; // or handle err;
-    }
-;
-    let zip = new JSZip();;
-    zip.loadAsync(data).then(function () {
-        let fileNameOrig = animationPath.split('\\').pop().split('/').pop();;
-        let fileName = fileNameOrig.split('.')[0] + ".json";;
-        zip.file(fileName).async("string").then(function(response) {
-            jsonToGp(JSON.parse(response).grease_pencil[0]);;
-        });;
-    });;
-});;
 */
