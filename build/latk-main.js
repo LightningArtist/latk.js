@@ -421,7 +421,7 @@ class Latk {
 
         let s = [] // string;
         s.push("{");
-        s.push("\t\"creator\": \"latk.py\",");
+        s.push("\t\"creator\": \"latk.js\",");
         s.push("\t\"version\": 2.8,");
         s.push("\t\"grease_pencil\": [");
         s.push("\t\t{");
