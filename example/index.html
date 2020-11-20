@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Example</title>
+		<style>
+			body {
+				background: black;
+				margin: 0px;
+			}
+
+			#canvas1{ 
+				width: 800px;
+				height: 600px;
+				border: 1px solid white;
+			}
+		</style>
+		<script src="../latk.js"></script>
+	</head>
+
+	<body>
+		<canvas id="canvas1"></canvas>
+
+		<script>
+			let canvas = document.getElementById("canvas1");
+
+			let latk = new Latk("./latk_logo.latk");
+		</script>
+	</body>
+
+</html>
