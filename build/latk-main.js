@@ -42,9 +42,21 @@ class Latk {
         return returns;
     }
 
+    jsonContains(json, name) {
+        if (json.indexOf(value.name) > -1) {
+            return true;
+        } else{
+            return false;
+        }
+    }
+
     read(filepath, clearExisting, yUp, useScaleAndOffset, globalScale, globalOffset) { // defaults to Blender Z up;
+        if (clearExisting === undefined) clearExisting = true;
+        if (yUp === undefined) yUp = false;
+        if (useScaleAndOffset === undefined) useScaleAndOffset = false;
         if (globalScale === undefined) globalScale = [ 1,1,1 ];
         if (globalOffset === undefined) globalOffset = [ 0,0,0 ];
+        
         let data;
 
         if (clearExisting === true) this.layers = [];
@@ -61,15 +73,15 @@ class Latk {
             }
         }
         
-        if ("version" not in data) { // latk format v2.7 or older;
-            if ("grease_pencil" not in data) { // latk format v2.0 or older;
-                layer = new LatkLayer();
-                if ("x" in data["brushstrokes"][0][0]) { // latk format v1.0, single frame ;
-                    frame = new LatkFrame();
-                    for jsonStroke in data["brushstrokes"] { 
+        if (!this.jsonContains(data, "version")) { // latk format v2.7 or older;
+            if (!this.jsonContains(data, "grease_pencil")) { // latk format v2.0 or older;
+                let layer = new LatkLayer();
+                if (this.jsonContains(data["brushstrokes"][0][0], "x")) { // latk format v1.0, single frame ;
+                    let frame = new LatkFrame();
+                    for (let jsonStroke of data["brushstrokes"]) { 
                         color = (1,1,1);
                         points = [];
-                        for jsonPoint in jsonStroke {}
+                        for jsonPoint in jsonStroke {
                             x = float(jsonPoint["x"]);
                             y = undefined;
                             z = undefined;
@@ -89,56 +101,55 @@ class Latk {
                             //~                                                           
                             pressure = 1.0;
                             strength = 1.0;
-                            points.push(LatkPoint((x,y,z), pressure, strength));
+                            points.push(new LatkPoint((x,y,z), pressure, strength));
                         }
-                        stroke = LatkStroke(points, color);
+                        stroke = new LatkStroke(points, color);
                         frame.strokes.push(stroke);
                         layer.frames.push(frame);
                     }
                     this.layers.push(layer);
-                } else { // latk format v2.0, animation;
-                    for jsonFrame in data["brushstrokes"] {
-                        frame = LatkFrame();
-                        for jsonStroke in jsonFrame {
-                            color = (1,1,1);
+            } else { // latk format v2.0, animation;
+                for (let jsonFrame of data["brushstrokes"]) {
+                    let frame = new LatkFrame();
+                    for (let jsonStroke of jsonFrame) {
+                        color = (1,1,1);
 
-                            points = [];
-                            for jsonPoint in jsonStroke {
-                                x = float(jsonPoint["x"]);
-                                y = undefined;
-                                z = undefined;
-                                if (yUp === false) {
-                                    y = float(jsonPoint["z"]);
-                                    z = float(jsonPoint["y"]);
-                                } else {
-                                    y = float(jsonPoint["y"]);
-                                    z = float(jsonPoint["z"]);
-                                }
-                                // ~
-                                if (useScaleAndOffset === true) {
-                                    x = (x * globalScale[0]) + globalOffset[0];
-                                    y = (y * globalScale[1]) + globalOffset[1];
-                                    z = (z * globalScale[2]) + globalOffset[2];
-                                }
-                                //~                                                           ;
-                                pressure = 1.0;
-                                strength = 1.0;
-                                points.push(LatkPoint((x,y,z), pressure, strength));
+                        points = [];
+                        for (let jsonPoint of jsonStroke) {
+                            x = float(jsonPoint["x"]);
+                            y = undefined;
+                            z = undefined;
+                            if (yUp === false) {
+                                y = float(jsonPoint["z"]);
+                                z = float(jsonPoint["y"]);
+                            } else {
+                                y = float(jsonPoint["y"]);
+                                z = float(jsonPoint["z"]);
                             }
-                                                    ;
-                            stroke = LatkStroke(points, color);
-                            frame.strokes.push(stroke);
+                            // ~
+                            if (useScaleAndOffset === true) {
+                                x = (x * globalScale[0]) + globalOffset[0];
+                                y = (y * globalScale[1]) + globalOffset[1];
+                                z = (z * globalScale[2]) + globalOffset[2];
+                            }
+                            //~                                                           ;
+                            pressure = 1.0;
+                            strength = 1.0;
+                            points.push(new LatkPoint((x,y,z), pressure, strength));
                         }
-                        layer.frames.push(frame);
+                                                ;
+                        let stroke = new LatkStroke(points, color);
+                        frame.strokes.push(stroke);
                     }
-                    this.layers.push(layer);
+                    layer.frames.push(frame);
                 }
+                this.layers.push(layer);
             } else { // latk format v2.7, Blender 2.7 Grease Pencil;
                 for jsonGp in data["grease_pencil"] {
                     for jsonLayer in jsonGp["layers"] {
-                        layer = LatkLayer(jsonLayer["name"]);
+                        layer = new LatkLayer(jsonLayer["name"]);
                         for jsonFrame in jsonLayer["frames"] {
-                            frame = LatkFrame();
+                            frame = new LatkFrame();
                             for jsonStroke in jsonFrame["strokes"] {
                                 color = (1,1,1);
                                 try {
@@ -171,17 +182,17 @@ class Latk {
                                     strength = 1.0;
                                     try {
                                         pressure = jsonPoint["pressure"];
-                                        if (isnan(pressure) === true):;
+                                        if (isNaN(pressure) === true):;
                                             pressure = 1.0;
                                     } catch (e) { }
                                     try {
                                         strength = jsonPoint["strength"];
-                                        if (isnan(strength) === true):;
+                                        if (isNaN(strength) === true):;
                                             strength = 1.0;
                                     } catch (e) { }
-                                    points.push(LatkPoint((x,y,z), pressure, strength));
+                                    points.push(new LatkPoint((x,y,z), pressure, strength));
                                 }
-                                stroke = LatkStroke(points, color);
+                                stroke = new LatkStroke(points, color);
                                 frame.strokes.push(stroke);
                             }
                             layer.frames.push(frame);
@@ -191,13 +202,13 @@ class Latk {
                 }
             }
         } else { // v2.8 and newer use version keys;
-            if (float(data["version"]) >= 2.8) { // latk format v2.8, Blender 2.8 Grease Pencil;
+            if (data["version"] >= 2.8) { // latk format v2.8, Blender 2.8 Grease Pencil;
                 for (let jsonGp of data["grease_pencil"]) {
                     for (let jsonLayer of jsonGp["layers"]) {
-                        let layer = LatkLayer(jsonLayer["name"]);
+                        let layer = new LatkLayer(jsonLayer["name"]);
 
                         for (let jsonFrame of jsonLayer["frames"]) {
-                            frame = LatkFrame();
+                            frame = new LatkFrame();
                             for (let jsonStroke of jsonFrame["strokes"]) {
                                 let color = [ 0,0,0,1 ];
                                 try {
@@ -228,42 +239,42 @@ class Latk {
 
                                 points = [];
                                 for (let jsonPoint of jsonStroke["points"]) {
-                                    let x = float(jsonPoint["co"][0]);
-                                    let y = undefined;
-                                    let z = undefined;
+                                    let x = jsonPoint["co"][0];
+                                    let y;
+                                    let z;
                                     if (yUp === false):;
-                                        y = float(jsonPoint["co"][2]);
-                                        z = float(jsonPoint["co"][1]);
+                                        y = jsonPoint["co"][2];
+                                        z = jsonPoint["co"][1];
                                     else:;
-                                        y = float(jsonPoint["co"][1]);
-                                        z = float(jsonPoint["co"][2]);
+                                        y = jsonPoint["co"][1];
+                                        z = jsonPoint["co"][2];
                                     // ~
                                     if (useScaleAndOffset === true):;
                                         x = (x * globalScale[0]) + globalOffset[0];
                                         y = (y * globalScale[1]) + globalOffset[1];
                                         z = (z * globalScale[2]) + globalOffset[2];
                                     //~                                                                                             ;
-                                    pressure = 1.0;
-                                    strength = 1.0;
-                                    vertex_color = (0.0,0.0,0.0,0.0);
+                                    pressure = 1;
+                                    strength = 1;
+                                    vertex_color = [ 0,0,0,0 ];
 
                                     try {
                                         pressure = jsonPoint["pressure"];
-                                        if (isnan(pressure) === true) pressure = 1.0;
+                                        if (isNaN(pressure) === true) pressure = 1.0;
                                     } catch (e) { }
                                     try {
                                         strength = jsonPoint["strength"];
-                                        if (isnan(strength) === true) strength = 1.0;
+                                        if (isNaN(strength) === true) strength = 1.0;
                                     } catch (e) { }
                                     try {
                                         vertex_color = jsonPoint["vertex_color"];
-                                        if (isnan(vertex_color) === true) vertex_color = (0.0,0.0,0.0,1.0);
+                                        if (isNaN(vertex_color) === true) vertex_color = [ 0,0,0,1 ];
                                     } catch (e) { }
 
-                                    points.push(LatkPoint((x,y,z), pressure, strength, vertex_color));
+                                    points.push(new LatkPoint((x,y,z), pressure, strength, vertex_color));
                                 }
 
-                                stroke = LatkStroke(points, color, fill_color);
+                                stroke = new LatkStroke(points, color, fill_color);
                                 frame.strokes.push(stroke);
                             }
                             layer.frames.push(frame);
@@ -275,7 +286,13 @@ class Latk {
         }
     }
 
-    write(filepath, yUp=true, useScaleAndOffset=false, zipped=true, globalScale=(1.0, 1.0, 1.0), globalOffset=(0.0, 0.0, 0.0)) { // defaults to Unity, Maya Y up;
+    write(filepath, yUp, useScaleAndOffset, zipped, globalScale, globalOffset) { // defaults to Unity, Maya Y up;
+        if (yUp === undefined) yUp = true;
+        if (useScaleAndOffset === undefined) useScaleAndOffset = false;
+        if (zipped === undefined) zipped = true;
+        if (globalScale === undefined) globalScale = [ 1,1,1 ];
+        if (globalOffset === undefined) globalOffset = [ 0,0,0 ];
+
         let FINAL_LAYER_LIST = []; // string array;
 
         for (let layer of this.layers) {
@@ -293,25 +310,23 @@ class Latk {
                 for i, stroke in enumerate(frame.strokes):;
                     sbb = [] // string array;
                     sbb.push("\t\t\t\t\t\t\t\t{");
-                    color = (0.0, 0.0, 0.0, 1.0);
-                    fill_color = (0.0, 0.0, 0.0, 0.0);
-                    ;
-                    try:;
+                    color = [ 0,0,0,1 ];
+                    fill_color = [ 0,0,0,0 ];
+                    
+                    try {
                         color = stroke.color;
-                        if (len(color) < 4):;
-                            color = (color[0], color[1], color[2], 1.0);
-                    except:;
-                        pass;
-                    try:;
+                        if (color.length < 4) color = [ color[0], color[1], color[2], 1 ];
+                    } catch (e) { }
+
+                    try {
                         fill_color = stroke.fill_color;
-                        if (len(fill_color) < 4):;
-                            fill_color = (fill_color[0], fill_color[1], fill_color[2], 0.0);
-                    except:;
-                        pass;
-                    sbb.push("\t\t\t\t\t\t\t\t\t\"color\": [" + str(float32(color[0])) + ", " + str(float32(color[1])) + ", " + str(float32(color[2])) + ", " + str(float32(color[3])) + "],");
-                    sbb.push("\t\t\t\t\t\t\t\t\t\"fill_color\": [" + str(float32(fill_color[0])) + ", " + str(float32(fill_color[1])) + ", " + str(float32(fill_color[2])) + ", " + str(float32(fill_color[3])) + "],");
+                        if (fill_color.length < 4) fill_color = [ fill_color[0], fill_color[1], fill_color[2], 0 ];
+                    } catch (e) { }
+
+                    sbb.push("\t\t\t\t\t\t\t\t\t\"color\": [" + color[0] + ", " + color[1] + ", " + color[2] + ", " + color[3] + "],");
+                    sbb.push("\t\t\t\t\t\t\t\t\t\"fill_color\": [" + fill_color[0] + ", " + fill_color[1] + ", " + fill_color[2] + ", " + fill_color[3] + "],");
 ;
-                    if (len(stroke.points) > 0): ;
+                    if (stroke.points.length > 0) {
                         sbb.push("\t\t\t\t\t\t\t\t\t\"points\": [");
                         for j, point in enumerate(stroke.points):;
                             x = point.co[0];
@@ -321,43 +336,49 @@ class Latk {
                             g = point.vertex_color[1];
                             b = point.vertex_color[2];
                             a = point.vertex_color[3];
-                            if (yUp === true):;
+                            if (yUp === true) {
                                 y = point.co[2];
                                 z = point.co[1];
-                            else:;
+                            } else {
                                 y = point.co[1];
-                                z = point.co[2]  ;
+                                z = point.co[2];
+                            }
                             // ~
-                            if (useScaleAndOffset === true):;
+                            if (useScaleAndOffset === true) {
                                 x = (x * globalScale[0]) + globalOffset[0];
                                 y = (y * globalScale[1]) + globalOffset[1];
                                 z = (z * globalScale[2]) + globalOffset[2];
+                            }
                             //~ ;
-                            pointStr = "\t\t\t\t\t\t\t\t\t\t{\"co\": [" + str(float32(x)) + ", " + str(float32(y)) + ", " + str(float32(z)) + "], \"pressure\": " + str(float32(point.pressure)) + ", \"strength\": " + str(float32(point.strength)) + ", \"vertex_color\": [" + str(float32(r)) + ", " + str(float32(g)) + ", " + str(float32(b)) + ", " + str(float32(a)) + "]}";
+                            pointStr = "\t\t\t\t\t\t\t\t\t\t{\"co\": [" + x + ", " + y + ", " + z + "], \"pressure\": " + point.pressure + ", \"strength\": " + point.strength + ", \"vertex_color\": [" + r + ", " + g + ", " + b + ", " + a + "]}";
                                           ;
-                            if (j === len(stroke.points) - 1):;
+                            if (j === stroke.points.length - 1) {
                                 sbb.push(pointStr);
                                 sbb.push("\t\t\t\t\t\t\t\t\t]");
-                            else:;
+                            } else {
                                 pointStr += ",";
                                 sbb.push(pointStr);
-                    else:;
+                            }
+                    } else {
                         sbb.push("\t\t\t\t\t\t\t\t\t\"points\": []");
+                    }
                     
-                    if (i === len(frame.strokes) - 1):;
+                    if (i === frame.strokes.length - 1) {
                         sbb.push("\t\t\t\t\t\t\t\t}");
-                    else:;
+                    } else {
                         sbb.push("\t\t\t\t\t\t\t\t},");
+                    }
                     
                     sb.push("\n".join(sbb));
                 
                 sbFooter = [];
-                if (h === len(layer.frames) - 1): ;
+                if (h === layer.frames.length - 1) {
                     sbFooter.push("\t\t\t\t\t\t\t]");
                     sbFooter.push("\t\t\t\t\t\t}");
-                else:;
+                } else {
                     sbFooter.push("\t\t\t\t\t\t\t]");
                     sbFooter.push("\t\t\t\t\t\t},");
+                }
                 sb.push("\n".join(sbFooter));
             
             FINAL_LAYER_LIST.push("\n".join(sb));
@@ -686,94 +707,12 @@ class Latk {
 }
 
 
-class LatkLayer {
-
-    constructor(name) {
-        if (name === undefined) name = "layer";
-        this.frames = [] // LatkFrame;
-        this.name = name;
-        this.parent = undefined;
-    }
-
-    getInfo(self) {
-        return this.name.split(".")[0];
-    }
-
-}
 
 
-class LatkFrame {
-
-    constructor(frame_number) {
-        if (frame_number === undefined) frame_number = 0;
-        this.strokes = [] // LatkStroke;
-        this.frame_number = frame_number;
-        this.parent_location = (0.0,0.0,0.0);
-    }
-
-}
 
 
-class LatkStroke {
-
-    constructor(points, color, fill_color) {
-        if (color === undefined) color = [ 0,0,0,1 ];
-        if (fill_color === undefined) fill_color = [ 0,0,0,0 ];
-
-        this.points = [];
-        if (points !== undefined) this.points = points;
-        this.color = color;
-        this.fill_color = fill_color;
-    }
-
-    setCoords(coords) {
-        this.points = [];
-        for (let coord of coords) {
-            this.points.push(new LatkPoint(coord));
-        }
-    }
-
-    getCoords() {
-        let returns = [];
-        for (let point of this.points) {
-            returns.push(point.co);
-        }
-        return returns;
-    }
-
-    getPressures() {
-        let returns = [];
-        for (let point of this.points) {
-            returns.push(point.pressure);
-        }
-        return returns;
-    }
-
-    getStrengths() {
-        let returns = [];
-        for (let point of this.points) {
-            returns.push(point.strength);
-        }
-        return returns;
-    }
-
-}
 
 
-class LatkPoint {
-
-    constructor(co, pressure=1.0, strength=1.0, vertex_color=(0.0, 0.0, 0.0, 0.0)) { // args float tuple, float, float;
-        if (pressure === undefined) pressure = 1;
-        if (strength === undefined) strength = 1;
-        if (vertex_color === undefined) vertex_color = [ 0,0,0,0 ];
-
-        this.co = co;
-        this.pressure = pressure;
-        this.strength = strength;
-        this.vertex_color = vertex_color;
-    }
-
-}
 
 /*
 function jsonToGp(data) {
