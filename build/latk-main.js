@@ -8,7 +8,7 @@ class Latk {
         this.frame_rate = 12;
 
         if (filepath !== undefined) {
-            this.read(filepath, true);
+            this.read(filepath, true, true, false, [1,1,1], [0,0,0]);
         } else if (init === true) {
             this.layers.push(new LatkLayer());
             this.layers[0].frames.push(new LatkFrame());
@@ -32,19 +32,6 @@ class Latk {
         } else {
             location.replace(uri);
         }
-    }
-
-    loadJSON(filepath, callback) {
-        // https://codepen.io/KryptoniteDove/post/load-json-file-locally-using-pure-javascript  ;
-        let xobj = new XMLHttpRequest();
-        xobj.overrideMimeType("application/json");
-        xobj.open('GET', filepath, true);
-        xobj.onreadystatechange = function() {
-            if (xobj.readyState === 4 && xobj.status === "200") {
-                callback(xobj.responseText);
-            }
-        };
-        xobj.send(null);
     }
 
     getFileNameNoExt(s) { // args string, return string;
@@ -76,6 +63,19 @@ class Latk {
         }
     }
 
+    loadJSON(filepath, callback) {
+        // https://codepen.io/KryptoniteDove/post/load-json-file-locally-using-pure-javascript  ;
+        let xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+        xobj.open('GET', filepath, true);
+        xobj.onreadystatechange = function() {
+            if (xobj.readyState === 4 && xobj.status === "200") {
+                callback(xobj.responseText);
+            }
+        };
+        xobj.send(null);
+    }
+
     read(filepath, clearExisting, yUp, useScaleAndOffset, globalScale, globalOffset) { // defaults to Blender Z up;
         if (clearExisting === undefined) clearExisting = true;
         if (yUp === undefined) yUp = false;
@@ -92,13 +92,15 @@ class Latk {
             //imz.readFromDisk(filepath);
             //data = json.loads(imz.files[0].decode("utf-8"));
         //} else {
-            this.loadJSON(filepath, function(response) {
-                this.jsonToGp(JSON.parse(response).grease_pencil[0], yUp, useScaleAndOffset, globalScale, globalOffset);
-            });
+        this.loadJSON(filepath, function(response) {
+            console.log(response.text);
+            this.jsonToGp(JSON.parse(response).grease_pencil[0], yUp, useScaleAndOffset, globalScale, globalOffset);
+        });
         //}
     }
 
     jsonToGp(data, yUp, useScaleAndOffset, globalScale, globalOffset) {
+        console.log("AAAA");
         if (!this.jsonContains(data, "version")) { // latk format v2.7 or older;
             if (!this.jsonContains(data, "grease_pencil")) { // latk format v2.0 or older;
                 let layer = new LatkLayer();

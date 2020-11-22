@@ -10,6 +10,8 @@ class LatkPoint {
         this.pressure = pressure;
         this.strength = strength;
         this.vertex_color = vertex_color;
+
+        console.log("New points: " + this.co);
     }
 
 }

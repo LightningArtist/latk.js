@@ -6,6 +6,8 @@ class LatkLayer {
         this.frames = [] // LatkFrame;
         this.name = name;
         this.parent = undefined;
+
+        console.log("New layer: " + this.name);
     }
 
     getInfo(self) {
