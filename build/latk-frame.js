@@ -7,7 +7,7 @@ class LatkFrame {
         this.frame_number = frame_number;
         this.parent_location = [ 0,0,0 ];
 
-        console.log("New frame " + frame_number);
+        console.log("New frame: " + frame_number);
     }
 
 }

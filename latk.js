@@ -58,6 +58,7 @@ class Latk {
         this.frame_rate = 12;
 
         if (filepath !== undefined) {
+            console.log("Loading: " + filepath);
             this.read(filepath, true, true, false, [1,1,1], [0,0,0]);
         } else if (init === true) {
             this.layers.push(new LatkLayer());
@@ -111,42 +112,6 @@ class Latk {
         } else{
             return false;
         }
-    }
-
-    loadJSON(filepath, callback) {
-        // https://codepen.io/KryptoniteDove/post/load-json-file-locally-using-pure-javascript  ;
-        let xobj = new XMLHttpRequest();
-        xobj.overrideMimeType("application/json");
-        xobj.open('GET', filepath, true);
-        xobj.onreadystatechange = function() {
-            if (xobj.readyState === 4 && xobj.status === "200") {
-                callback(xobj.responseText);
-            }
-        };
-        xobj.send(null);
-    }
-
-    read(filepath, clearExisting, yUp, useScaleAndOffset, globalScale, globalOffset) { // defaults to Blender Z up;
-        if (clearExisting === undefined) clearExisting = true;
-        if (yUp === undefined) yUp = false;
-        if (useScaleAndOffset === undefined) useScaleAndOffset = false;
-        if (globalScale === undefined) globalScale = [ 1,1,1 ];
-        if (globalOffset === undefined) globalOffset = [ 0,0,0 ];
-        
-        if (clearExisting === true) this.layers = [];
-
-        let fileType = this.getExtFromFileName(filepath);
-
-        //if (fileType === "latk" || fileType === "zip") {
-            //let imz = new InMemoryZip();
-            //imz.readFromDisk(filepath);
-            //data = json.loads(imz.files[0].decode("utf-8"));
-        //} else {
-        this.loadJSON(filepath, function(response) {
-            console.log(response.text);
-            this.jsonToGp(JSON.parse(response).grease_pencil[0], yUp, useScaleAndOffset, globalScale, globalOffset);
-        });
-        //}
     }
 
     jsonToGp(data, yUp, useScaleAndOffset, globalScale, globalOffset) {
@@ -368,6 +333,44 @@ class Latk {
         }
     }
 
+    loadJSON(filepath, callback) { 
+        // https://codepen.io/KryptoniteDove/post/load-json-file-locally-using-pure-javascript  
+        //var filepath = animationPath;
+        let xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+        xobj.open('GET', filepath, true);
+        xobj.onreadystatechange = function() {
+            if (xobj.readyState == 4 && xobj.status == "200") {
+                // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                callback(xobj.responseText);
+            }
+        };
+        xobj.send(null);  
+    }
+
+    read(filepath, clearExisting, yUp, useScaleAndOffset, globalScale, globalOffset) { // defaults to Blender Z up;
+        if (clearExisting === undefined) clearExisting = true;
+        if (clearExisting === true) this.layers = [];
+        if (yUp === undefined) yUp = false;
+        if (useScaleAndOffset === undefined) useScaleAndOffset = false;
+        if (globalScale === undefined) globalScale = [ 1,1,1 ];
+        if (globalOffset === undefined) globalOffset = [ 0,0,0 ];
+
+        let fileType = this.getExtFromFileName(filepath);
+        console.log("Filetype: " + fileType);
+
+        //if (fileType === "latk" || fileType === "zip") {
+            //let imz = new InMemoryZip();
+            //imz.readFromDisk(filepath);
+            //data = json.loads(imz.files[0].decode("utf-8"));
+        //} else {
+        this.loadJSON(filepath, function(response) {
+            console.log(response);
+            this.jsonToGp(JSON.parse(response).grease_pencil[0], yUp, useScaleAndOffset, globalScale, globalOffset);
+        });
+        //}
+    }
+    
     write(filepath, yUp, useScaleAndOffset, zipped, globalScale, globalOffset) { // defaults to Unity, Maya Y up;
         if (yUp === undefined) yUp = true;
         if (useScaleAndOffset === undefined) useScaleAndOffset = false;
@@ -1101,7 +1104,7 @@ class LatkFrame {
         this.frame_number = frame_number;
         this.parent_location = [ 0,0,0 ];
 
-        console.log("New frame " + frame_number);
+        console.log("New frame: " + frame_number);
     }
 
 }
@@ -1110,13 +1113,14 @@ class LatkFrame {
 class LatkStroke {
 
     constructor(points, color, fill_color) {
+        if (points === undefined) points = [];
         if (color === undefined) color = [ 0,0,0,1 ];
         if (fill_color === undefined) fill_color = [ 0,0,0,0 ];
 
-        this.points = [];
-        if (points !== undefined) this.points = points;
+        this.points = points;
         this.color = color;
         this.fill_color = fill_color;
+        
         console.log("New stroke: " + this.points.length);
     }
 
@@ -1157,6 +1161,7 @@ class LatkStroke {
 class LatkPoint {
 
     constructor(co, pressure, strength, vertex_color) { // args float tuple, float, float;
+        if (co === undefined) co = [ 0,0,0 ];
         if (pressure === undefined) pressure = 1;
         if (strength === undefined) strength = 1;
         if (vertex_color === undefined) vertex_color = [ 0,0,0,0 ];
@@ -1166,7 +1171,7 @@ class LatkPoint {
         this.strength = strength;
         this.vertex_color = vertex_color;
 
-        console.log("New points: " + this.co);
+        console.log("New point: " + this.co);
     }
 
 }

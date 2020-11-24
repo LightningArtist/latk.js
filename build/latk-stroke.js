@@ -2,13 +2,14 @@
 class LatkStroke {
 
     constructor(points, color, fill_color) {
+        if (points === undefined) points = [];
         if (color === undefined) color = [ 0,0,0,1 ];
         if (fill_color === undefined) fill_color = [ 0,0,0,0 ];
 
-        this.points = [];
-        if (points !== undefined) this.points = points;
+        this.points = points;
         this.color = color;
         this.fill_color = fill_color;
+        
         console.log("New stroke: " + this.points.length);
     }
 
