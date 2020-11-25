@@ -86,6 +86,10 @@ function jsonToGp(data) {
     return latk;
 }
 
+function gpToJson(latk) {
+
+}
+
 
 class LatkUtil {
 

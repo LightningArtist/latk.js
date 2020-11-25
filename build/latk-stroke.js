@@ -10,7 +10,7 @@ class LatkStroke {
         this.color = color;
         this.fill_color = fill_color;
         
-        console.log("New stroke: " + this.points.length);
+        //console.log("New stroke: " + this.points.length);
     }
 
     setCoords(coords) {

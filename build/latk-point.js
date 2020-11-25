@@ -12,7 +12,7 @@ class LatkPoint {
         this.strength = strength;
         this.vertex_color = vertex_color;
 
-        console.log("New point: " + this.co);
+        //console.log("New point: " + this.co);
     }
 
 }

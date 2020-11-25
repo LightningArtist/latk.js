@@ -678,7 +678,7 @@ class LatkStroke {
         this.color = color;
         this.fill_color = fill_color;
         
-        console.log("New stroke: " + this.points.length);
+        //console.log("New stroke: " + this.points.length);
     }
 
     setCoords(coords) {
@@ -728,7 +728,7 @@ class LatkPoint {
         this.strength = strength;
         this.vertex_color = vertex_color;
 
-        console.log("New point: " + this.co);
+        //console.log("New point: " + this.co);
     }
 
 }
@@ -819,6 +819,10 @@ function jsonToGp(data) {
     }
 
     return latk;
+}
+
+function gpToJson(latk) {
+
 }
 
 
