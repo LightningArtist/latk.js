@@ -50,10 +50,173 @@ JSZipUtils - A collection of cross-browser utilities to go along with JSZip.
 Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/jszip-utils/master/LICENSE.markdown.
 
 */
-!function(a){"object"==typeof exports?module.exports=a():"function"==typeof define&&define.amd?define(a):"undefined"!=typeof window?window.JSZipUtils=a():"undefined"!=typeof global?global.JSZipUtils=a():"undefined"!=typeof self&&(self.JSZipUtils=a())}(function(){return function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);throw new Error("Cannot find module '"+g+"'")}var j=c[g]={exports:{}};b[g][0].call(j.exports,function(a){var c=b[g][1][a];return e(c?c:a)},j,j.exports,a,b,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b){"use strict";function c(){try{return new window.XMLHttpRequest}catch(a){}}function d(){try{return new window.ActiveXObject("Microsoft.XMLHTTP")}catch(a){}}var e={};e._getBinaryFromXHR=function(a){return a.response||a.responseText};var f=window.ActiveXObject?function(){return c()||d()}:c;e.getBinaryContent=function(a,b){try{var c=f();c.open("GET",a,!0),"responseType"in c&&(c.responseType="arraybuffer"),c.overrideMimeType&&c.overrideMimeType("text/plain; charset=x-user-defined"),c.onreadystatechange=function(){var d,f;if(4===c.readyState)if(200===c.status||0===c.status){d=null,f=null;try{d=e._getBinaryFromXHR(c)}catch(g){f=new Error(g)}b(f,d)}else b(new Error("Ajax error for "+a+" : "+this.status+" "+this.statusText),null)},c.send()}catch(d){b(new Error(d),null)}},b.exports=e},{}]},{},[1])(1)});class LatkUtil {
+!function(a){"object"==typeof exports?module.exports=a():"function"==typeof define&&define.amd?define(a):"undefined"!=typeof window?window.JSZipUtils=a():"undefined"!=typeof global?global.JSZipUtils=a():"undefined"!=typeof self&&(self.JSZipUtils=a())}(function(){return function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);throw new Error("Cannot find module '"+g+"'")}var j=c[g]={exports:{}};b[g][0].call(j.exports,function(a){var c=b[g][1][a];return e(c?c:a)},j,j.exports,a,b,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b){"use strict";function c(){try{return new window.XMLHttpRequest}catch(a){}}function d(){try{return new window.ActiveXObject("Microsoft.XMLHTTP")}catch(a){}}var e={};e._getBinaryFromXHR=function(a){return a.response||a.responseText};var f=window.ActiveXObject?function(){return c()||d()}:c;e.getBinaryContent=function(a,b){try{var c=f();c.open("GET",a,!0),"responseType"in c&&(c.responseType="arraybuffer"),c.overrideMimeType&&c.overrideMimeType("text/plain; charset=x-user-defined"),c.onreadystatechange=function(){var d,f;if(4===c.readyState)if(200===c.status||0===c.status){d=null,f=null;try{d=e._getBinaryFromXHR(c)}catch(g){f=new Error(g)}b(f,d)}else b(new Error("Ajax error for "+a+" : "+this.status+" "+this.statusText),null)},c.send()}catch(d){b(new Error(d),null)}},b.exports=e},{}]},{},[1])(1)});
+class LatkPoint {
+
+    constructor(co, pressure, strength, vertex_color) { // args float tuple, float, float;
+        if (co === undefined) co = [ 0,0,0 ];
+        if (pressure === undefined) pressure = 1;
+        if (strength === undefined) strength = 1;
+        if (vertex_color === undefined) vertex_color = [ 0,0,0,0 ];
+
+        this.co = co;
+        this.pressure = pressure;
+        this.strength = strength;
+        this.vertex_color = vertex_color;
+
+        //console.log("New point: " + this.co);
+    }
+
+}
+
+
+class LatkStroke {
+
+    constructor(points, color, fill_color) {
+        if (points === undefined) points = [];
+        if (color === undefined) color = [ 0,0,0,1 ];
+        if (fill_color === undefined) fill_color = [ 0,0,0,0 ];
+
+        this.points = points;
+        this.color = color;
+        this.fill_color = fill_color;
+        
+        //console.log("New stroke: " + this.points.length);
+    }
+
+    setCoords(coords) {
+        this.points = [];
+        for (let coord of coords) {
+            this.points.push(new LatkPoint(coord));
+        }
+    }
+
+    getCoords() {
+        let returns = [];
+        for (let point of this.points) {
+            returns.push(point.co);
+        }
+        return returns;
+    }
+
+    getPressures() {
+        let returns = [];
+        for (let point of this.points) {
+            returns.push(point.pressure);
+        }
+        return returns;
+    }
+
+    getStrengths() {
+        let returns = [];
+        for (let point of this.points) {
+            returns.push(point.strength);
+        }
+        return returns;
+    }
+
+}
+
+
+class LatkFrame {
+
+    constructor(frame_number) {
+        if (frame_number === undefined) frame_number = 0;
+        this.strokes = [] // LatkStroke;
+        this.frame_number = frame_number;
+        this.parent_location = [ 0,0,0 ];
+
+        console.log("New frame: " + frame_number);
+    }
+
+}
+
+
+class LatkLayer {
+
+    constructor(name) {
+        if (name === undefined) name = "layer";
+        this.frames = [] // LatkFrame;
+        this.name = name;
+        this.parent = undefined;
+
+        console.log("New layer: " + this.name);
+    }
+
+    getInfo(self) {
+        return this.name.split(".")[0];
+    }
+
+}
+
+
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ;
+
+class Latk {
+
+    constructor(init, coords, color) { // args string, Latk array, float tuple array, float tuple 
+        this.layers = []; // LatkLayer
+        this.frame_rate = 12;
+        this.clearExisting = true;
+        this.yUp = true;
+        this.useScaleAndOffset = false;
+        this.globalScale = [ 1,1,1 ];
+        this.globalOffset = [ 0,0,0 ];
+        this.ready = false;
+
+        if (init === true) {
+            this.layers.push(new LatkLayer());
+            this.layers[0].frames.push(new LatkFrame());
+            if (coords !== undefined) { // 
+                let stroke = new LatkStroke();
+                stroke.setCoords(coords);
+                if (color !== undefined) stroke.color = color;
+                this.layers[0].frames[0].strokes.push(stroke);
+            }
+        }
+    }
+
+    static read(animationPath) {
+        let latk = new Latk();
+
+        if (animationPath.split(".")[animationPath.split(".").length-1] === "json") {
+            let xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', animationPath, true);
+            xobj.onreadystatechange = function() {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    latk.layers = Latk.jsonToGp(JSON.parse(xobj.responseText));
+                    latk.ready = true;
+                }
+            };
+            xobj.send(null);  
+        } else {
+            JSZipUtils.getBinaryContent(animationPath, function(err, data) {
+                if (err) {
+                    throw err; // or handle err
+                }
+
+                var zip = new JSZip();
+                zip.loadAsync(data).then(function () {
+                        // https://github.com/Stuk/jszip/issues/375
+                        var entries = Object.keys(zip.files).map(function (name) {
+                          return zip.files[name];
+                        });
+
+                        zip.file(entries[0].name).async("string").then(function(response) {
+                            latk.layers = Latk.jsonToGp(JSON.parse(response));
+                            latk.ready = true;
+                        });
+                });
+            });
+        }
+
+        return latk;
+    }
 
     static jsonToGp(data) {
-    	let layers = [];
+        let layers = [];
 
         for (let jsonGp of data["grease_pencil"]) {
             for (let jsonLayer of jsonGp["layers"]) {
@@ -73,7 +236,7 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
                                 a = jsonStroke["color"][3];
                             } catch (e) { }
                             
-                            color = (r,g,b,a);
+                            color = [ r,g,b,a ];
                         } catch (e) { }
 
                         let fill_color = [ 0,0,0,0 ];
@@ -86,7 +249,7 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
                                 a = jsonStroke["fill_color"][3];
                             } catch (e) { }
 
-                            fill_color = (r,g,b,a);
+                            fill_color = [ r,g,b,a ];
                         } catch (e) { }                              
 
                         let points = [];
@@ -110,15 +273,15 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
                             //~                                                                                             ;
                             let pressure = 1;
                             let strength = 1;
-                            let vertex_color = [ 0,0,0,0 ];
+                            let vertex_color = [ 0,0,0,1 ];
 
                             try {
                                 pressure = jsonPoint["pressure"];
-                                if (isNaN(pressure) === true) pressure = 1.0;
+                                if (isNaN(pressure) === true) pressure = 1;
                             } catch (e) { }
                             try {
                                 strength = jsonPoint["strength"];
-                                if (isNaN(strength) === true) strength = 1.0;
+                                if (isNaN(strength) === true) strength = 1;
                             } catch (e) { }
                             try {
                                 vertex_color = jsonPoint["vertex_color"];
@@ -178,51 +341,14 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
         return returns;
     }
 
-	static jsonContains(json, name) {
-		let json_s = "" + json;
-	    if (json_s.indexOf(name) > -1) {
-	        return true;
-	    } else{
-	        return false;
-	    }
-	}
-
-	static read(animationPath) {
-        let latk = new Latk();
-
-		if (animationPath.split(".")[animationPath.split(".").length-1] === "json") {
-            let xobj = new XMLHttpRequest();
-            xobj.overrideMimeType("application/json");
-            xobj.open('GET', animationPath, true);
-            xobj.onreadystatechange = function() {
-                if (xobj.readyState == 4 && xobj.status == "200") {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    latk.layers = LatkUtil.jsonToGp(JSON.parse(xobj.responseText));
-                }
-            };
-            xobj.send(null);  
-	    } else {
-	        JSZipUtils.getBinaryContent(animationPath, function(err, data) {
-	            if (err) {
-	                throw err; // or handle err
-	            }
-
-	            var zip = new JSZip();
-	            zip.loadAsync(data).then(function () {
-		                // https://github.com/Stuk/jszip/issues/375
-		                var entries = Object.keys(zip.files).map(function (name) {
-		                  return zip.files[name];
-		                });
-
-		                zip.file(entries[0].name).async("string").then(function(response) {
-		                    latk.layers = LatkUtil.jsonToGp(JSON.parse(response));
-		                });
-	            });
-	        });
-	    }
-
-	    return latk;
-	}
+    static jsonContains(json, name) {
+        let json_s = "" + json;
+        if (json_s.indexOf(name) > -1) {
+            return true;
+        } else{
+            return false;
+        }
+    }
 
     static write(filepath) { // defaults to Unity, Maya Y up;
         let FINAL_LAYER_LIST = []; // string array;
@@ -364,134 +490,7 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
         }
         */
 
-        this.download("saved_" + Date.now() + ".json", s.join("\n"));
-    }
-
-}
-
-
-class LatkPoint {
-
-    constructor(co, pressure, strength, vertex_color) { // args float tuple, float, float;
-        if (co === undefined) co = [ 0,0,0 ];
-        if (pressure === undefined) pressure = 1;
-        if (strength === undefined) strength = 1;
-        if (vertex_color === undefined) vertex_color = [ 0,0,0,0 ];
-
-        this.co = co;
-        this.pressure = pressure;
-        this.strength = strength;
-        this.vertex_color = vertex_color;
-
-        //console.log("New point: " + this.co);
-    }
-
-}
-
-
-class LatkStroke {
-
-    constructor(points, color, fill_color) {
-        if (points === undefined) points = [];
-        if (color === undefined) color = [ 0,0,0,1 ];
-        if (fill_color === undefined) fill_color = [ 0,0,0,0 ];
-
-        this.points = points;
-        this.color = color;
-        this.fill_color = fill_color;
-        
-        //console.log("New stroke: " + this.points.length);
-    }
-
-    setCoords(coords) {
-        this.points = [];
-        for (let coord of coords) {
-            this.points.push(new LatkPoint(coord));
-        }
-    }
-
-    getCoords() {
-        let returns = [];
-        for (let point of this.points) {
-            returns.push(point.co);
-        }
-        return returns;
-    }
-
-    getPressures() {
-        let returns = [];
-        for (let point of this.points) {
-            returns.push(point.pressure);
-        }
-        return returns;
-    }
-
-    getStrengths() {
-        let returns = [];
-        for (let point of this.points) {
-            returns.push(point.strength);
-        }
-        return returns;
-    }
-
-}
-
-
-class LatkFrame {
-
-    constructor(frame_number) {
-        if (frame_number === undefined) frame_number = 0;
-        this.strokes = [] // LatkStroke;
-        this.frame_number = frame_number;
-        this.parent_location = [ 0,0,0 ];
-
-        console.log("New frame: " + frame_number);
-    }
-
-}
-
-
-class LatkLayer {
-
-    constructor(name) {
-        if (name === undefined) name = "layer";
-        this.frames = [] // LatkFrame;
-        this.name = name;
-        this.parent = undefined;
-
-        console.log("New layer: " + this.name);
-    }
-
-    getInfo(self) {
-        return this.name.split(".")[0];
-    }
-
-}
-
-
-// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ;
-
-class Latk {
-
-    constructor(init, coords, color) { // args string, Latk array, float tuple array, float tuple 
-        this.layers = []; // LatkLayer
-        this.frame_rate = 12;
-        this.clearExisting = true;
-        this.yUp = true;
-        this.useScaleAndOffset = false;
-        this.globalScale = [ 1,1,1 ];
-        this.globalOffset = [ 0,0,0 ];
-
-        if (init === true) {
-            this.layers.push(new LatkLayer());
-            this.layers[0].frames.push(new LatkFrame());
-            if (coords !== undefined) { // 
-                let stroke = new LatkStroke();
-                stroke.setCoords(coords);
-                if (color !== undefined) stroke.color = color;
-                this.layers[0].frames[0].strokes.push(stroke);
-            }
-        }
+        Latk.download("saved_" + Date.now() + ".json", s.join("\n"));
     }
 
     clean(epsilon) {

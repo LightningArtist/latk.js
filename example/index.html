@@ -9,8 +9,8 @@
 			}
 
 			#canvas1{ 
-				width: 800px;
-				height: 600px;
+				width: 960px;
+				height: 540px;
 				border: 1px solid white;
 			}
 		</style>
@@ -22,12 +22,31 @@
 
 		<script>
 			let canvas = document.getElementById("canvas1");
+      		let ctx = canvas.getContext("2d");
 
-			let latk = LatkUtil.read("latk_logo.json");
+			let latk = Latk.read("latk_logo.latk");
 
-			setTimeout(function() {
-				console.log(latk.layers.length);
-			}, 1000);
+			let counter = 0;
+			setInterval(function() {
+				if (latk.ready) {
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+					for (let layer of latk.layers) {
+						for (let stroke of layer.frames[counter].strokes) {
+							ctx.strokeStyle = "rgb(" + (stroke.color[0]*255) + "," + (stroke.color[1]*255) + "," + (stroke.color[2]*255) +")";
+							ctx.beginPath();
+							for (let point of stroke.points) {
+								let x = point.co[2] * canvas.height + canvas.width/3;
+								let y = point.co[1] * -canvas.height + canvas.height/2;
+								ctx.lineTo(x, y);
+							}
+							ctx.stroke();
+						}
+					}
+
+					counter++;
+					if (counter > latk.layers[0].frames.length-1) counter = 0;
+				}
+			}, 1/12*1000);
 		</script>
 	</body>
 

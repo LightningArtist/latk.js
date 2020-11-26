@@ -15,6 +15,6 @@ cd $DIR
 rm $BUILD_TARGET
 touch $BUILD_TARGET
 
-cat "latk-header.js" "libraries/jszip/jszip.min.js" "libraries/jszip/jszip-utils.min.js" "latk-util.js" "latk-point.js" "latk-stroke.js" "latk-frame.js" "latk-layer.js" "latk-main.js" > $BUILD_TARGET
+cat "latk-header.js" "libraries/jszip/jszip.min.js" "libraries/jszip/jszip-utils.min.js" "latk-point.js" "latk-stroke.js" "latk-frame.js" "latk-layer.js" "latk-main.js" > $BUILD_TARGET
 
 #cp $BUILD_TARGET "${HOME}/Library/Application Support/Blender/2.91/scripts/addons/"
