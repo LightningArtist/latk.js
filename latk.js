@@ -50,7 +50,425 @@ JSZipUtils - A collection of cross-browser utilities to go along with JSZip.
 Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/jszip-utils/master/LICENSE.markdown.
 
 */
-!function(a){"object"==typeof exports?module.exports=a():"function"==typeof define&&define.amd?define(a):"undefined"!=typeof window?window.JSZipUtils=a():"undefined"!=typeof global?global.JSZipUtils=a():"undefined"!=typeof self&&(self.JSZipUtils=a())}(function(){return function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);throw new Error("Cannot find module '"+g+"'")}var j=c[g]={exports:{}};b[g][0].call(j.exports,function(a){var c=b[g][1][a];return e(c?c:a)},j,j.exports,a,b,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b){"use strict";function c(){try{return new window.XMLHttpRequest}catch(a){}}function d(){try{return new window.ActiveXObject("Microsoft.XMLHTTP")}catch(a){}}var e={};e._getBinaryFromXHR=function(a){return a.response||a.responseText};var f=window.ActiveXObject?function(){return c()||d()}:c;e.getBinaryContent=function(a,b){try{var c=f();c.open("GET",a,!0),"responseType"in c&&(c.responseType="arraybuffer"),c.overrideMimeType&&c.overrideMimeType("text/plain; charset=x-user-defined"),c.onreadystatechange=function(){var d,f;if(4===c.readyState)if(200===c.status||0===c.status){d=null,f=null;try{d=e._getBinaryFromXHR(c)}catch(g){f=new Error(g)}b(f,d)}else b(new Error("Ajax error for "+a+" : "+this.status+" "+this.statusText),null)},c.send()}catch(d){b(new Error(d),null)}},b.exports=e},{}]},{},[1])(1)});
+!function(a){"object"==typeof exports?module.exports=a():"function"==typeof define&&define.amd?define(a):"undefined"!=typeof window?window.JSZipUtils=a():"undefined"!=typeof global?global.JSZipUtils=a():"undefined"!=typeof self&&(self.JSZipUtils=a())}(function(){return function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);throw new Error("Cannot find module '"+g+"'")}var j=c[g]={exports:{}};b[g][0].call(j.exports,function(a){var c=b[g][1][a];return e(c?c:a)},j,j.exports,a,b,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b){"use strict";function c(){try{return new window.XMLHttpRequest}catch(a){}}function d(){try{return new window.ActiveXObject("Microsoft.XMLHTTP")}catch(a){}}var e={};e._getBinaryFromXHR=function(a){return a.response||a.responseText};var f=window.ActiveXObject?function(){return c()||d()}:c;e.getBinaryContent=function(a,b){try{var c=f();c.open("GET",a,!0),"responseType"in c&&(c.responseType="arraybuffer"),c.overrideMimeType&&c.overrideMimeType("text/plain; charset=x-user-defined"),c.onreadystatechange=function(){var d,f;if(4===c.readyState)if(200===c.status||0===c.status){d=null,f=null;try{d=e._getBinaryFromXHR(c)}catch(g){f=new Error(g)}b(f,d)}else b(new Error("Ajax error for "+a+" : "+this.status+" "+this.statusText),null)},c.send()}catch(d){b(new Error(d),null)}},b.exports=e},{}]},{},[1])(1)});class LatkUtil {
+
+    static jsonToGp(data) {
+    	let layers = [];
+
+        for (let jsonGp of data["grease_pencil"]) {
+            for (let jsonLayer of jsonGp["layers"]) {
+                let layer = new LatkLayer(jsonLayer["name"]);
+
+                for (let jsonFrame of jsonLayer["frames"]) {
+                    let frame = new LatkFrame();
+                    for (let jsonStroke of jsonFrame["strokes"]) {
+                        let color = [ 0,0,0,1 ];
+                        try {
+                            let r = jsonStroke["color"][0];
+                            let g = jsonStroke["color"][1];
+                            let b = jsonStroke["color"][2];
+                            let a = 1.0;
+                            
+                            try {
+                                a = jsonStroke["color"][3];
+                            } catch (e) { }
+                            
+                            color = (r,g,b,a);
+                        } catch (e) { }
+
+                        let fill_color = [ 0,0,0,0 ];
+                        try {
+                            let r = jsonStroke["fill_color"][0];
+                            let g = jsonStroke["fill_color"][1];
+                            let b = jsonStroke["fill_color"][2];
+                            let a = 0.0;
+                            try {
+                                a = jsonStroke["fill_color"][3];
+                            } catch (e) { }
+
+                            fill_color = (r,g,b,a);
+                        } catch (e) { }                              
+
+                        let points = [];
+                        for (let jsonPoint of jsonStroke["points"]) {
+                            let x = jsonPoint["co"][0];
+                            let y;
+                            let z;
+                            if (latk.yUp === false) {
+                                y = jsonPoint["co"][2];
+                                z = jsonPoint["co"][1];
+                            } else {
+                                y = jsonPoint["co"][1];
+                                z = jsonPoint["co"][2];
+                            }
+                            // ~
+                            if (latk.useScaleAndOffset === true) {
+                                x = (x * globalScale[0]) + globalOffset[0];
+                                y = (y * globalScale[1]) + globalOffset[1];
+                                z = (z * globalScale[2]) + globalOffset[2];
+                            }
+                            //~                                                                                             ;
+                            let pressure = 1;
+                            let strength = 1;
+                            let vertex_color = [ 0,0,0,0 ];
+
+                            try {
+                                pressure = jsonPoint["pressure"];
+                                if (isNaN(pressure) === true) pressure = 1.0;
+                            } catch (e) { }
+                            try {
+                                strength = jsonPoint["strength"];
+                                if (isNaN(strength) === true) strength = 1.0;
+                            } catch (e) { }
+                            try {
+                                vertex_color = jsonPoint["vertex_color"];
+                                if (isNaN(vertex_color) === true) vertex_color = [ 0,0,0,1 ];
+                            } catch (e) { }
+
+                            points.push(new LatkPoint([ x,y,z ], pressure, strength, vertex_color));
+                        }
+
+                        let stroke = new LatkStroke(points, color, fill_color);
+                        frame.strokes.push(stroke);
+                    }
+                    layer.frames.push(frame);
+                }
+                layers.push(layer);
+            }
+        }
+
+        return layers;
+    }
+
+    static gpToJson(latk) {
+        //
+    }
+
+    static download(strData, filename) {
+        let link = document.createElement('a');
+        if (typeof link.download === 'string') {
+            document.body.appendChild(link); //Firefox requires the link to be in the body
+            link.download = filename;
+            link.href = strData;
+            link.click();
+            document.body.removeChild(link); //remove the link when done
+        } else {
+            location.replace(uri);
+        }
+    }
+
+    static getFileNameNoExt(s) { // args string, return string;
+        let returns = "";
+        let temp = s.toString().split(".");
+        if (temp.length > 1) {
+            for (let i=0; i<temp.length-1; i++) {
+                if (i > 0) returns += ".";
+                returns += temp[i];
+            }
+        } else {
+            return s;
+        }
+        return returns;
+    }
+        
+    static getExtFromFileName(s) { // args string, returns string ;
+        let returns = "";
+        let temp = s.toString().split(".");
+        returns = temp[temp.length-1];
+        return returns;
+    }
+
+	static jsonContains(json, name) {
+		let json_s = "" + json;
+	    if (json_s.indexOf(name) > -1) {
+	        return true;
+	    } else{
+	        return false;
+	    }
+	}
+
+	static read(animationPath) {
+        let latk = new Latk();
+
+		if (animationPath.split(".")[animationPath.split(".").length-1] === "json") {
+            let xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', animationPath, true);
+            xobj.onreadystatechange = function() {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    latk.layers = LatkUtil.jsonToGp(JSON.parse(xobj.responseText));
+                }
+            };
+            xobj.send(null);  
+	    } else {
+	        JSZipUtils.getBinaryContent(animationPath, function(err, data) {
+	            if (err) {
+	                throw err; // or handle err
+	            }
+
+	            var zip = new JSZip();
+	            zip.loadAsync(data).then(function () {
+		                // https://github.com/Stuk/jszip/issues/375
+		                var entries = Object.keys(zip.files).map(function (name) {
+		                  return zip.files[name];
+		                });
+
+		                zip.file(entries[0].name).async("string").then(function(response) {
+		                    latk.layers = LatkUtil.jsonToGp(JSON.parse(response));
+		                });
+	            });
+	        });
+	    }
+
+	    return latk;
+	}
+
+    static write(filepath) { // defaults to Unity, Maya Y up;
+        let FINAL_LAYER_LIST = []; // string array;
+
+        for (let layer of this.layers) {
+            let sb = [] // string array;
+            let sbHeader = [] // string array;
+            sbHeader.push("\t\t\t\t\t\"frames\": [");
+            sb.push("\n".join(sbHeader));
+
+            for (let [h, frame] of layer.frames) {
+                let sbbHeader = [] // string array;
+                sbbHeader.push("\t\t\t\t\t\t{");
+                sbbHeader.push("\t\t\t\t\t\t\t\"strokes\": [");
+                sb.push("\n".join(sbbHeader));
+                
+                for (let [i, stroke] of frame.strokes) {
+                    let sbb = [] // string array;
+                    sbb.push("\t\t\t\t\t\t\t\t{");
+                    let color = [ 0,0,0,1 ];
+                    let fill_color = [ 0,0,0,0 ];
+                    
+                    try {
+                        color = stroke.color;
+                        if (color.length < 4) color = [ color[0], color[1], color[2], 1 ];
+                    } catch (e) { }
+
+                    try {
+                        fill_color = stroke.fill_color;
+                        if (fill_color.length < 4) fill_color = [ fill_color[0], fill_color[1], fill_color[2], 0 ];
+                    } catch (e) { }
+
+                    sbb.push("\t\t\t\t\t\t\t\t\t\"color\": [" + color[0] + ", " + color[1] + ", " + color[2] + ", " + color[3] + "],");
+                    sbb.push("\t\t\t\t\t\t\t\t\t\"fill_color\": [" + fill_color[0] + ", " + fill_color[1] + ", " + fill_color[2] + ", " + fill_color[3] + "],");
+
+                    if (stroke.points.length > 0) {
+                        sbb.push("\t\t\t\t\t\t\t\t\t\"points\": [");
+                        for (let [j, point] of stroke.points) {
+                            let x = point.co[0];
+                            let y = undefined;
+                            let z = undefined;
+                            let r = point.vertex_color[0];
+                            let g = point.vertex_color[1];
+                            let b = point.vertex_color[2];
+                            let a = point.vertex_color[3];
+                            
+                            if (yUp === true) {
+                                y = point.co[2];
+                                z = point.co[1];
+                            } else {
+                                y = point.co[1];
+                                z = point.co[2];
+                            }
+                            // ~
+                            if (useScaleAndOffset === true) {
+                                x = (x * globalScale[0]) + globalOffset[0];
+                                y = (y * globalScale[1]) + globalOffset[1];
+                                z = (z * globalScale[2]) + globalOffset[2];
+                            }
+                            //~ ;
+                            let pointStr = "\t\t\t\t\t\t\t\t\t\t{\"co\": [" + x + ", " + y + ", " + z + "], \"pressure\": " + point.pressure + ", \"strength\": " + point.strength + ", \"vertex_color\": [" + r + ", " + g + ", " + b + ", " + a + "]}";
+                                          ;
+                            if (j === stroke.points.length - 1) {
+                                sbb.push(pointStr);
+                                sbb.push("\t\t\t\t\t\t\t\t\t]");
+                            } else {
+                                pointStr += ",";
+                                sbb.push(pointStr);
+                            }
+                        }
+                    } else {
+                        sbb.push("\t\t\t\t\t\t\t\t\t\"points\": []");
+                    }
+                    
+                    if (i === frame.strokes.length - 1) {
+                        sbb.push("\t\t\t\t\t\t\t\t}");
+                    } else {
+                        sbb.push("\t\t\t\t\t\t\t\t},");
+                    }
+                    
+                    sb.push("\n".join(sbb));
+                }
+
+                let sbFooter = [];
+                if (h === layer.frames.length - 1) {
+                    sbFooter.push("\t\t\t\t\t\t\t]");
+                    sbFooter.push("\t\t\t\t\t\t}");
+                } else {
+                    sbFooter.push("\t\t\t\t\t\t\t]");
+                    sbFooter.push("\t\t\t\t\t\t},");
+                }
+
+                sb.push("\n".join(sbFooter));
+            }
+
+            FINAL_LAYER_LIST.push("\n".join(sb));
+        }
+
+        let s = [] // string;
+        s.push("{");
+        s.push("\t\"creator\": \"latk.js\",");
+        s.push("\t\"version\": 2.8,");
+        s.push("\t\"grease_pencil\": [");
+        s.push("\t\t{");
+        s.push("\t\t\t\"layers\": [");
+
+        for (let [i, layer] of this.layers) {
+            s.push("\t\t\t\t{");
+            if (layer.name !== undefined && layer.name !== "") {
+                s.push("\t\t\t\t\t\"name\": \"" + layer.name + "\",");
+            } else {
+                s.push("\t\t\t\t\t\"name\": \"layer" + str(i + 1) + "\",");
+            }
+            s.push(FINAL_LAYER_LIST[i]);
+
+            s.push("\t\t\t\t\t]");
+            if (i < len(this.layers) - 1) {
+                s.push("\t\t\t\t},");
+            } else {
+                s.push("\t\t\t\t}");
+                s.push("\t\t\t]") // end layers;
+            }
+        }
+        s.push("\t\t}");
+        s.push("\t]");
+        s.push("}");
+        
+        //fileType = this.getExtFromFileName(filepath);
+        /*
+        if (zipped === true or fileType === "latk" or fileType === "zip") {
+            filepathNoExt = this.getFileNameNoExt(filepath);
+            imz = new InMemoryZip();
+            imz.push(filepathNoExt + ".json", "\n".join(s));
+            imz.writetofile(filepath)            ;
+        } else {
+            with open(filepath, "w") as f:
+                f.write("\n".join(s));
+                f.closed;
+        }
+        */
+
+        this.download("saved_" + Date.now() + ".json", s.join("\n"));
+    }
+
+}
+
+
+class LatkPoint {
+
+    constructor(co, pressure, strength, vertex_color) { // args float tuple, float, float;
+        if (co === undefined) co = [ 0,0,0 ];
+        if (pressure === undefined) pressure = 1;
+        if (strength === undefined) strength = 1;
+        if (vertex_color === undefined) vertex_color = [ 0,0,0,0 ];
+
+        this.co = co;
+        this.pressure = pressure;
+        this.strength = strength;
+        this.vertex_color = vertex_color;
+
+        //console.log("New point: " + this.co);
+    }
+
+}
+
+
+class LatkStroke {
+
+    constructor(points, color, fill_color) {
+        if (points === undefined) points = [];
+        if (color === undefined) color = [ 0,0,0,1 ];
+        if (fill_color === undefined) fill_color = [ 0,0,0,0 ];
+
+        this.points = points;
+        this.color = color;
+        this.fill_color = fill_color;
+        
+        //console.log("New stroke: " + this.points.length);
+    }
+
+    setCoords(coords) {
+        this.points = [];
+        for (let coord of coords) {
+            this.points.push(new LatkPoint(coord));
+        }
+    }
+
+    getCoords() {
+        let returns = [];
+        for (let point of this.points) {
+            returns.push(point.co);
+        }
+        return returns;
+    }
+
+    getPressures() {
+        let returns = [];
+        for (let point of this.points) {
+            returns.push(point.pressure);
+        }
+        return returns;
+    }
+
+    getStrengths() {
+        let returns = [];
+        for (let point of this.points) {
+            returns.push(point.strength);
+        }
+        return returns;
+    }
+
+}
+
+
+class LatkFrame {
+
+    constructor(frame_number) {
+        if (frame_number === undefined) frame_number = 0;
+        this.strokes = [] // LatkStroke;
+        this.frame_number = frame_number;
+        this.parent_location = [ 0,0,0 ];
+
+        console.log("New frame: " + frame_number);
+    }
+
+}
+
+
+class LatkLayer {
+
+    constructor(name) {
+        if (name === undefined) name = "layer";
+        this.frames = [] // LatkFrame;
+        this.name = name;
+        this.parent = undefined;
+
+        console.log("New layer: " + this.name);
+    }
+
+    getInfo(self) {
+        return this.name.split(".")[0];
+    }
+
+}
+
+
 // ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ;
 
 class Latk {
@@ -634,437 +1052,3 @@ function cleanCoord(coord) {
     }
 }
 */
-
-class LatkLayer {
-
-    constructor(name) {
-        if (name === undefined) name = "layer";
-        this.frames = [] // LatkFrame;
-        this.name = name;
-        this.parent = undefined;
-
-        console.log("New layer: " + this.name);
-    }
-
-    getInfo(self) {
-        return this.name.split(".")[0];
-    }
-
-}
-
-
-class LatkFrame {
-
-    constructor(frame_number) {
-        if (frame_number === undefined) frame_number = 0;
-        this.strokes = [] // LatkStroke;
-        this.frame_number = frame_number;
-        this.parent_location = [ 0,0,0 ];
-
-        console.log("New frame: " + frame_number);
-    }
-
-}
-
-
-class LatkStroke {
-
-    constructor(points, color, fill_color) {
-        if (points === undefined) points = [];
-        if (color === undefined) color = [ 0,0,0,1 ];
-        if (fill_color === undefined) fill_color = [ 0,0,0,0 ];
-
-        this.points = points;
-        this.color = color;
-        this.fill_color = fill_color;
-        
-        //console.log("New stroke: " + this.points.length);
-    }
-
-    setCoords(coords) {
-        this.points = [];
-        for (let coord of coords) {
-            this.points.push(new LatkPoint(coord));
-        }
-    }
-
-    getCoords() {
-        let returns = [];
-        for (let point of this.points) {
-            returns.push(point.co);
-        }
-        return returns;
-    }
-
-    getPressures() {
-        let returns = [];
-        for (let point of this.points) {
-            returns.push(point.pressure);
-        }
-        return returns;
-    }
-
-    getStrengths() {
-        let returns = [];
-        for (let point of this.points) {
-            returns.push(point.strength);
-        }
-        return returns;
-    }
-
-}
-
-
-class LatkPoint {
-
-    constructor(co, pressure, strength, vertex_color) { // args float tuple, float, float;
-        if (co === undefined) co = [ 0,0,0 ];
-        if (pressure === undefined) pressure = 1;
-        if (strength === undefined) strength = 1;
-        if (vertex_color === undefined) vertex_color = [ 0,0,0,0 ];
-
-        this.co = co;
-        this.pressure = pressure;
-        this.strength = strength;
-        this.vertex_color = vertex_color;
-
-        //console.log("New point: " + this.co);
-    }
-
-}
-
-function jsonToGp(data) {
-	let latk = new Latk();
-
-    for (let jsonGp of data["grease_pencil"]) {
-        for (let jsonLayer of jsonGp["layers"]) {
-            let layer = new LatkLayer(jsonLayer["name"]);
-
-            for (let jsonFrame of jsonLayer["frames"]) {
-                let frame = new LatkFrame();
-                for (let jsonStroke of jsonFrame["strokes"]) {
-                    let color = [ 0,0,0,1 ];
-                    try {
-                        let r = jsonStroke["color"][0];
-                        let g = jsonStroke["color"][1];
-                        let b = jsonStroke["color"][2];
-                        let a = 1.0;
-                        
-                        try {
-                            a = jsonStroke["color"][3];
-                        } catch (e) { }
-                        
-                        color = (r,g,b,a);
-                    } catch (e) { }
-
-                    let fill_color = [ 0,0,0,0 ];
-                    try {
-                        let r = jsonStroke["fill_color"][0];
-                        let g = jsonStroke["fill_color"][1];
-                        let b = jsonStroke["fill_color"][2];
-                        let a = 0.0;
-                        try {
-                            a = jsonStroke["fill_color"][3];
-                        } catch (e) { }
-
-                        fill_color = (r,g,b,a);
-                    } catch (e) { }                              
-
-                    let points = [];
-                    for (let jsonPoint of jsonStroke["points"]) {
-                        let x = jsonPoint["co"][0];
-                        let y;
-                        let z;
-                        if (latk.yUp === false) {
-                            y = jsonPoint["co"][2];
-                            z = jsonPoint["co"][1];
-                        } else {
-                            y = jsonPoint["co"][1];
-                            z = jsonPoint["co"][2];
-                        }
-                        // ~
-                        if (latk.useScaleAndOffset === true) {
-                            x = (x * globalScale[0]) + globalOffset[0];
-                            y = (y * globalScale[1]) + globalOffset[1];
-                            z = (z * globalScale[2]) + globalOffset[2];
-                        }
-                        //~                                                                                             ;
-                        let pressure = 1;
-                        let strength = 1;
-                        let vertex_color = [ 0,0,0,0 ];
-
-                        try {
-                            pressure = jsonPoint["pressure"];
-                            if (isNaN(pressure) === true) pressure = 1.0;
-                        } catch (e) { }
-                        try {
-                            strength = jsonPoint["strength"];
-                            if (isNaN(strength) === true) strength = 1.0;
-                        } catch (e) { }
-                        try {
-                            vertex_color = jsonPoint["vertex_color"];
-                            if (isNaN(vertex_color) === true) vertex_color = [ 0,0,0,1 ];
-                        } catch (e) { }
-
-                        points.push(new LatkPoint([ x,y,z ], pressure, strength, vertex_color));
-                    }
-
-                    let stroke = new LatkStroke(points, color, fill_color);
-                    frame.strokes.push(stroke);
-                }
-                layer.frames.push(frame);
-            }
-            latk.layers.push(layer);
-        }
-    }
-
-    return latk;
-}
-
-function gpToJson(latk) {
-
-}
-
-
-class LatkUtil {
-
-	constructor() {
-		//
-	}
-
-    download(strData, filename) {
-        let link = document.createElement('a');
-        if (typeof link.download === 'string') {
-            document.body.appendChild(link); //Firefox requires the link to be in the body
-            link.download = filename;
-            link.href = strData;
-            link.click();
-            document.body.removeChild(link); //remove the link when done
-        } else {
-            location.replace(uri);
-        }
-    }
-
-    getFileNameNoExt(s) { // args string, return string;
-        let returns = "";
-        let temp = s.toString().split(".");
-        if (temp.length > 1) {
-            for (let i=0; i<temp.length-1; i++) {
-                if (i > 0) returns += ".";
-                returns += temp[i];
-            }
-        } else {
-            return s;
-        }
-        return returns;
-    }
-        
-    getExtFromFileName(s) { // args string, returns string ;
-        let returns = "";
-        let temp = s.toString().split(".");
-        returns = temp[temp.length-1];
-        return returns;
-    }
-
-	jsonContains(json, name) {
-		let json_s = "" + json;
-	    if (json_s.indexOf(name) > -1) {
-	        return true;
-	    } else{
-	        return false;
-	    }
-	}
-
-    loadJSON(filepath, callback) { 
-        // https://codepen.io/KryptoniteDove/post/load-json-file-locally-using-pure-javascript  
-        //var filepath = animationPath;
-        let xobj = new XMLHttpRequest();
-        xobj.overrideMimeType("application/json");
-        xobj.open('GET', filepath, true);
-        xobj.onreadystatechange = function() {
-            if (xobj.readyState == 4 && xobj.status == "200") {
-                // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                callback(xobj.responseText);
-            }
-        };
-        xobj.send(null);  
-    }
-
-	read(animationPath) {
-		let latk = new Latk();
-
-		if (animationPath.split(".")[animationPath.split(".").length-1] === "json") {
-	        this.loadJSON(animationPath, function(response) {
-	            //lightningArtistData = JSON.parse(response).grease_pencil[0].layers[0];
-	            latk = jsonToGp(JSON.parse(response));
-	        });
-	    } else {
-	        JSZipUtils.getBinaryContent(animationPath, function(err, data) {
-	            if (err) {
-	                throw err; // or handle err
-	            }
-
-	            var zip = new JSZip();
-	            zip.loadAsync(data).then(function () {
-		                // https://github.com/Stuk/jszip/issues/375
-		                var entries = Object.keys(zip.files).map(function (name) {
-		                  return zip.files[name];
-		                });
-
-		                zip.file(entries[0].name).async("string").then(function(response) {
-		                    latk = jsonToGp(JSON.parse(response));
-		                });
-	            });
-	        });
-	    }
-
-	    return latk;
-	}
-
-    write(filepath) { // defaults to Unity, Maya Y up;
-        let FINAL_LAYER_LIST = []; // string array;
-
-        for (let layer of this.layers) {
-            let sb = [] // string array;
-            let sbHeader = [] // string array;
-            sbHeader.push("\t\t\t\t\t\"frames\": [");
-            sb.push("\n".join(sbHeader));
-
-            for (let [h, frame] of layer.frames) {
-                let sbbHeader = [] // string array;
-                sbbHeader.push("\t\t\t\t\t\t{");
-                sbbHeader.push("\t\t\t\t\t\t\t\"strokes\": [");
-                sb.push("\n".join(sbbHeader));
-                
-                for (let [i, stroke] of frame.strokes) {
-                    let sbb = [] // string array;
-                    sbb.push("\t\t\t\t\t\t\t\t{");
-                    let color = [ 0,0,0,1 ];
-                    let fill_color = [ 0,0,0,0 ];
-                    
-                    try {
-                        color = stroke.color;
-                        if (color.length < 4) color = [ color[0], color[1], color[2], 1 ];
-                    } catch (e) { }
-
-                    try {
-                        fill_color = stroke.fill_color;
-                        if (fill_color.length < 4) fill_color = [ fill_color[0], fill_color[1], fill_color[2], 0 ];
-                    } catch (e) { }
-
-                    sbb.push("\t\t\t\t\t\t\t\t\t\"color\": [" + color[0] + ", " + color[1] + ", " + color[2] + ", " + color[3] + "],");
-                    sbb.push("\t\t\t\t\t\t\t\t\t\"fill_color\": [" + fill_color[0] + ", " + fill_color[1] + ", " + fill_color[2] + ", " + fill_color[3] + "],");
-
-                    if (stroke.points.length > 0) {
-                        sbb.push("\t\t\t\t\t\t\t\t\t\"points\": [");
-                        for (let [j, point] of stroke.points) {
-                            let x = point.co[0];
-                            let y = undefined;
-                            let z = undefined;
-                            let r = point.vertex_color[0];
-                            let g = point.vertex_color[1];
-                            let b = point.vertex_color[2];
-                            let a = point.vertex_color[3];
-                            
-                            if (yUp === true) {
-                                y = point.co[2];
-                                z = point.co[1];
-                            } else {
-                                y = point.co[1];
-                                z = point.co[2];
-                            }
-                            // ~
-                            if (useScaleAndOffset === true) {
-                                x = (x * globalScale[0]) + globalOffset[0];
-                                y = (y * globalScale[1]) + globalOffset[1];
-                                z = (z * globalScale[2]) + globalOffset[2];
-                            }
-                            //~ ;
-                            let pointStr = "\t\t\t\t\t\t\t\t\t\t{\"co\": [" + x + ", " + y + ", " + z + "], \"pressure\": " + point.pressure + ", \"strength\": " + point.strength + ", \"vertex_color\": [" + r + ", " + g + ", " + b + ", " + a + "]}";
-                                          ;
-                            if (j === stroke.points.length - 1) {
-                                sbb.push(pointStr);
-                                sbb.push("\t\t\t\t\t\t\t\t\t]");
-                            } else {
-                                pointStr += ",";
-                                sbb.push(pointStr);
-                            }
-                        }
-                    } else {
-                        sbb.push("\t\t\t\t\t\t\t\t\t\"points\": []");
-                    }
-                    
-                    if (i === frame.strokes.length - 1) {
-                        sbb.push("\t\t\t\t\t\t\t\t}");
-                    } else {
-                        sbb.push("\t\t\t\t\t\t\t\t},");
-                    }
-                    
-                    sb.push("\n".join(sbb));
-                }
-
-                let sbFooter = [];
-                if (h === layer.frames.length - 1) {
-                    sbFooter.push("\t\t\t\t\t\t\t]");
-                    sbFooter.push("\t\t\t\t\t\t}");
-                } else {
-                    sbFooter.push("\t\t\t\t\t\t\t]");
-                    sbFooter.push("\t\t\t\t\t\t},");
-                }
-
-                sb.push("\n".join(sbFooter));
-            }
-
-            FINAL_LAYER_LIST.push("\n".join(sb));
-        }
-
-        let s = [] // string;
-        s.push("{");
-        s.push("\t\"creator\": \"latk.js\",");
-        s.push("\t\"version\": 2.8,");
-        s.push("\t\"grease_pencil\": [");
-        s.push("\t\t{");
-        s.push("\t\t\t\"layers\": [");
-
-        for (let [i, layer] of this.layers) {
-            s.push("\t\t\t\t{");
-            if (layer.name !== undefined && layer.name !== "") {
-                s.push("\t\t\t\t\t\"name\": \"" + layer.name + "\",");
-            } else {
-                s.push("\t\t\t\t\t\"name\": \"layer" + str(i + 1) + "\",");
-            }
-            s.push(FINAL_LAYER_LIST[i]);
-
-            s.push("\t\t\t\t\t]");
-            if (i < len(this.layers) - 1) {
-                s.push("\t\t\t\t},");
-            } else {
-                s.push("\t\t\t\t}");
-                s.push("\t\t\t]") // end layers;
-            }
-        }
-        s.push("\t\t}");
-        s.push("\t]");
-        s.push("}");
-        
-        //fileType = this.getExtFromFileName(filepath);
-        /*
-        if (zipped === true or fileType === "latk" or fileType === "zip") {
-            filepathNoExt = this.getFileNameNoExt(filepath);
-            imz = new InMemoryZip();
-            imz.push(filepathNoExt + ".json", "\n".join(s));
-            imz.writetofile(filepath)            ;
-        } else {
-            with open(filepath, "w") as f:
-                f.write("\n".join(s));
-                f.closed;
-        }
-        */
-
-        this.download("saved_" + Date.now() + ".json", s.join("\n"));
-    }
-
-}
-
-const latkUtil = new LatkUtil();
-

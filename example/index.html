@@ -23,10 +23,11 @@
 		<script>
 			let canvas = document.getElementById("canvas1");
 
-			let latk = latkUtil.read("latk_logo.json");
+			let latk = LatkUtil.read("latk_logo.json");
 
-
-			console.log(latk.layers.length);
+			setTimeout(function() {
+				console.log(latk.layers.length);
+			}, 1000);
 		</script>
 	</body>
 

@@ -1,103 +1,98 @@
-function jsonToGp(data) {
-	let latk = new Latk();
-
-    for (let jsonGp of data["grease_pencil"]) {
-        for (let jsonLayer of jsonGp["layers"]) {
-            let layer = new LatkLayer(jsonLayer["name"]);
-
-            for (let jsonFrame of jsonLayer["frames"]) {
-                let frame = new LatkFrame();
-                for (let jsonStroke of jsonFrame["strokes"]) {
-                    let color = [ 0,0,0,1 ];
-                    try {
-                        let r = jsonStroke["color"][0];
-                        let g = jsonStroke["color"][1];
-                        let b = jsonStroke["color"][2];
-                        let a = 1.0;
-                        
-                        try {
-                            a = jsonStroke["color"][3];
-                        } catch (e) { }
-                        
-                        color = (r,g,b,a);
-                    } catch (e) { }
-
-                    let fill_color = [ 0,0,0,0 ];
-                    try {
-                        let r = jsonStroke["fill_color"][0];
-                        let g = jsonStroke["fill_color"][1];
-                        let b = jsonStroke["fill_color"][2];
-                        let a = 0.0;
-                        try {
-                            a = jsonStroke["fill_color"][3];
-                        } catch (e) { }
-
-                        fill_color = (r,g,b,a);
-                    } catch (e) { }                              
-
-                    let points = [];
-                    for (let jsonPoint of jsonStroke["points"]) {
-                        let x = jsonPoint["co"][0];
-                        let y;
-                        let z;
-                        if (latk.yUp === false) {
-                            y = jsonPoint["co"][2];
-                            z = jsonPoint["co"][1];
-                        } else {
-                            y = jsonPoint["co"][1];
-                            z = jsonPoint["co"][2];
-                        }
-                        // ~
-                        if (latk.useScaleAndOffset === true) {
-                            x = (x * globalScale[0]) + globalOffset[0];
-                            y = (y * globalScale[1]) + globalOffset[1];
-                            z = (z * globalScale[2]) + globalOffset[2];
-                        }
-                        //~                                                                                             ;
-                        let pressure = 1;
-                        let strength = 1;
-                        let vertex_color = [ 0,0,0,0 ];
-
-                        try {
-                            pressure = jsonPoint["pressure"];
-                            if (isNaN(pressure) === true) pressure = 1.0;
-                        } catch (e) { }
-                        try {
-                            strength = jsonPoint["strength"];
-                            if (isNaN(strength) === true) strength = 1.0;
-                        } catch (e) { }
-                        try {
-                            vertex_color = jsonPoint["vertex_color"];
-                            if (isNaN(vertex_color) === true) vertex_color = [ 0,0,0,1 ];
-                        } catch (e) { }
-
-                        points.push(new LatkPoint([ x,y,z ], pressure, strength, vertex_color));
-                    }
-
-                    let stroke = new LatkStroke(points, color, fill_color);
-                    frame.strokes.push(stroke);
-                }
-                layer.frames.push(frame);
-            }
-            latk.layers.push(layer);
-        }
-    }
-
-    return latk;
-}
-
-function gpToJson(latk) {
-
-}
-
-
 class LatkUtil {
 
-	constructor() {
-		//
-	}
+    static jsonToGp(data) {
+    	let layers = [];
 
-    download(strData, filename) {
+        for (let jsonGp of data["grease_pencil"]) {
+            for (let jsonLayer of jsonGp["layers"]) {
+                let layer = new LatkLayer(jsonLayer["name"]);
+
+                for (let jsonFrame of jsonLayer["frames"]) {
+                    let frame = new LatkFrame();
+                    for (let jsonStroke of jsonFrame["strokes"]) {
+                        let color = [ 0,0,0,1 ];
+                        try {
+                            let r = jsonStroke["color"][0];
+                            let g = jsonStroke["color"][1];
+                            let b = jsonStroke["color"][2];
+                            let a = 1.0;
+                            
+                            try {
+                                a = jsonStroke["color"][3];
+                            } catch (e) { }
+                            
+                            color = (r,g,b,a);
+                        } catch (e) { }
+
+                        let fill_color = [ 0,0,0,0 ];
+                        try {
+                            let r = jsonStroke["fill_color"][0];
+                            let g = jsonStroke["fill_color"][1];
+                            let b = jsonStroke["fill_color"][2];
+                            let a = 0.0;
+                            try {
+                                a = jsonStroke["fill_color"][3];
+                            } catch (e) { }
+
+                            fill_color = (r,g,b,a);
+                        } catch (e) { }                              
+
+                        let points = [];
+                        for (let jsonPoint of jsonStroke["points"]) {
+                            let x = jsonPoint["co"][0];
+                            let y;
+                            let z;
+                            if (latk.yUp === false) {
+                                y = jsonPoint["co"][2];
+                                z = jsonPoint["co"][1];
+                            } else {
+                                y = jsonPoint["co"][1];
+                                z = jsonPoint["co"][2];
+                            }
+                            // ~
+                            if (latk.useScaleAndOffset === true) {
+                                x = (x * globalScale[0]) + globalOffset[0];
+                                y = (y * globalScale[1]) + globalOffset[1];
+                                z = (z * globalScale[2]) + globalOffset[2];
+                            }
+                            //~                                                                                             ;
+                            let pressure = 1;
+                            let strength = 1;
+                            let vertex_color = [ 0,0,0,0 ];
+
+                            try {
+                                pressure = jsonPoint["pressure"];
+                                if (isNaN(pressure) === true) pressure = 1.0;
+                            } catch (e) { }
+                            try {
+                                strength = jsonPoint["strength"];
+                                if (isNaN(strength) === true) strength = 1.0;
+                            } catch (e) { }
+                            try {
+                                vertex_color = jsonPoint["vertex_color"];
+                                if (isNaN(vertex_color) === true) vertex_color = [ 0,0,0,1 ];
+                            } catch (e) { }
+
+                            points.push(new LatkPoint([ x,y,z ], pressure, strength, vertex_color));
+                        }
+
+                        let stroke = new LatkStroke(points, color, fill_color);
+                        frame.strokes.push(stroke);
+                    }
+                    layer.frames.push(frame);
+                }
+                layers.push(layer);
+            }
+        }
+
+        return layers;
+    }
+
+    static gpToJson(latk) {
+        //
+    }
+
+    static download(strData, filename) {
         let link = document.createElement('a');
         if (typeof link.download === 'string') {
             document.body.appendChild(link); //Firefox requires the link to be in the body
@@ -110,7 +105,7 @@ class LatkUtil {
         }
     }
 
-    getFileNameNoExt(s) { // args string, return string;
+    static getFileNameNoExt(s) { // args string, return string;
         let returns = "";
         let temp = s.toString().split(".");
         if (temp.length > 1) {
@@ -124,14 +119,14 @@ class LatkUtil {
         return returns;
     }
         
-    getExtFromFileName(s) { // args string, returns string ;
+    static getExtFromFileName(s) { // args string, returns string ;
         let returns = "";
         let temp = s.toString().split(".");
         returns = temp[temp.length-1];
         return returns;
     }
 
-	jsonContains(json, name) {
+	static jsonContains(json, name) {
 		let json_s = "" + json;
 	    if (json_s.indexOf(name) > -1) {
 	        return true;
@@ -140,29 +135,20 @@ class LatkUtil {
 	    }
 	}
 
-    loadJSON(filepath, callback) { 
-        // https://codepen.io/KryptoniteDove/post/load-json-file-locally-using-pure-javascript  
-        //var filepath = animationPath;
-        let xobj = new XMLHttpRequest();
-        xobj.overrideMimeType("application/json");
-        xobj.open('GET', filepath, true);
-        xobj.onreadystatechange = function() {
-            if (xobj.readyState == 4 && xobj.status == "200") {
-                // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                callback(xobj.responseText);
-            }
-        };
-        xobj.send(null);  
-    }
-
-	read(animationPath) {
-		let latk = new Latk();
+	static read(animationPath) {
+        let latk = new Latk();
 
 		if (animationPath.split(".")[animationPath.split(".").length-1] === "json") {
-	        this.loadJSON(animationPath, function(response) {
-	            //lightningArtistData = JSON.parse(response).grease_pencil[0].layers[0];
-	            latk = jsonToGp(JSON.parse(response));
-	        });
+            let xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/json");
+            xobj.open('GET', animationPath, true);
+            xobj.onreadystatechange = function() {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    latk.layers = LatkUtil.jsonToGp(JSON.parse(xobj.responseText));
+                }
+            };
+            xobj.send(null);  
 	    } else {
 	        JSZipUtils.getBinaryContent(animationPath, function(err, data) {
 	            if (err) {
@@ -177,7 +163,7 @@ class LatkUtil {
 		                });
 
 		                zip.file(entries[0].name).async("string").then(function(response) {
-		                    latk = jsonToGp(JSON.parse(response));
+		                    latk.layers = LatkUtil.jsonToGp(JSON.parse(response));
 		                });
 	            });
 	        });
@@ -186,7 +172,7 @@ class LatkUtil {
 	    return latk;
 	}
 
-    write(filepath) { // defaults to Unity, Maya Y up;
+    static write(filepath) { // defaults to Unity, Maya Y up;
         let FINAL_LAYER_LIST = []; // string array;
 
         for (let layer of this.layers) {
@@ -330,6 +316,4 @@ class LatkUtil {
     }
 
 }
-
-const latkUtil = new LatkUtil();
 
