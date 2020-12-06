@@ -139,7 +139,11 @@ class LatkLayer {
         this.frames = [] // LatkFrame;
         this.name = name;
         this.parent = undefined;
-
+        // for compatibility with old project;
+        this.counter = 0;
+        this.loopCounter = 0;
+        this.previousFrame = 0;
+        
         console.log("New layer: " + this.name);
     }
 
