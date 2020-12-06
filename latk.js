@@ -151,6 +151,14 @@ class LatkLayer {
         return this.name.split(".")[0];
     }
 
+    getPreviousFrame() {
+        return this.frames[this.previousFrame];
+    }
+
+    getLastFrame() {
+        return this.frames[this.frames.length-1];
+    }
+
 }
 
 
@@ -177,6 +185,7 @@ class Latk {
                 if (color !== undefined) stroke.color = color;
                 this.layers[0].frames[0].strokes.push(stroke);
             }
+            this.ready = true;
         }
     }
 
@@ -764,6 +773,22 @@ class Latk {
 
     remapInt(value, min1, max1, min2, max2) {
         return parseInt(this.remap(value, min1, max1, min2, max2));
+    }
+
+    getLastLayer() {
+        return this.layers[this.layers.length-1];
+    }
+
+    getLoopFrame(_frame) {
+        return this.getLongestLayer().loopCounter * (this.getLongestLayer().frames.length - 1);
+    }
+
+    getLongestLayer() {
+        let index = 0;
+        for (let i=0; i<this.layers.length; i++) {
+            if (this.layers[i].frames.length > index) index = i;
+        }
+        return this.layers[i];
     }
 
     /*

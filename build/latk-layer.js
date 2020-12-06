@@ -18,5 +18,13 @@ class LatkLayer {
         return this.name.split(".")[0];
     }
 
+    getPreviousFrame() {
+        return this.frames[this.previousFrame];
+    }
+
+    getLastFrame() {
+        return this.frames[this.frames.length-1];
+    }
+
 }
 
