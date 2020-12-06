@@ -10,5 +10,9 @@ class LatkFrame {
         console.log("New frame: " + frame_number);
     }
 
+    getLastStroke() {
+    	return this.strokes[this.strokes.length-1];
+    }
+
 }
 

@@ -9,7 +9,7 @@ class Latk {
         this.clearExisting = true;
         this.yUp = true;
         this.useScaleAndOffset = false;
-        this.globalScale = [ 1,1,1 ];
+        this.globalScale = [ 100,100,100 ];
         this.globalOffset = [ 0,0,0 ];
         this.ready = false;
 
@@ -37,6 +37,7 @@ class Latk {
                 if (xobj.readyState == 4 && xobj.status == "200") {
                     // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
                     latk.layers = Latk.jsonToGp(JSON.parse(xobj.responseText));
+                    console.log("Latk loaded from json.");
                     latk.ready = true;
                 }
             };
@@ -56,6 +57,7 @@ class Latk {
 
                         zip.file(entries[0].name).async("string").then(function(response) {
                             latk.layers = Latk.jsonToGp(JSON.parse(response));
+                            console.log("Latk loaded from zip.");
                             latk.ready = true;
                         });
                 });

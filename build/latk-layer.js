@@ -26,5 +26,9 @@ class LatkLayer {
         return this.frames[this.frames.length-1];
     }
 
+    getCurrentFrame() {
+        return this.frames[this.counter];
+    }
+
 }
 
