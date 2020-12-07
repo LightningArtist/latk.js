@@ -1,4 +1,6 @@
 
+
+
 class LatkPoint {
 
     constructor(co, pressure, strength, vertex_color) { // args float tuple, float, float;
