@@ -9,7 +9,7 @@ class LatkStroke {
         this.points = points;
         this.color = color;
         this.fill_color = fill_color;
-        
+        this.timestamp = new Date().getTime();
         //console.log("New stroke: " + this.points.length);
     }
 
