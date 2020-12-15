@@ -23,14 +23,10 @@
 			let latk;
 			let counter = 0;
 
-			const renderer = new THREE.WebGLRenderer({ antialiasing: false, alpha: false, preserveDrawingBuffer: true });
+			const renderer = new THREE.WebGLRenderer({ antialiasing: false, alpha: false });
 			renderer.setSize(960, 540);
 			renderer.setPixelRatio(window.devicePixelRatio);
 			renderer.setClearColor(0x000000);
-
-			const exposure = 1.2;
-			renderer.toneMapping = THREE.ReinhardToneMapping;
-			renderer.toneMappingExposure = Math.pow(exposure, 4.0);
 			renderer.autoClear = false;
 			document.body.appendChild(renderer.domElement);
 
@@ -39,10 +35,12 @@
 			const cameraNear = 0.1;
 			const cameraFar = 100;
 			const camera = new THREE.PerspectiveCamera(cameraFov, cameraAspect, cameraNear, cameraFar);
-			resetCameraPosition();
 
 			const scene = new THREE.Scene();
 			scene.background = new THREE.Color("#000000");  
+
+			let markTime = 0;
+			const timeInterval = 1/12*1000;
 
 			function setup() {
 				latk = Latk.read("latk_logo.latk");
@@ -51,6 +49,7 @@
 			}
 
 			function draw() {
+				renderer.clear();
 				clearScene();
 
 				if (latk.ready) {
@@ -63,32 +62,26 @@
 								let co = new THREE.Vector3(point.co[0], point.co[1], point.co[2]);
 								points.push(co);
 							}
+							buffer.setFromPoints(points);
 							let line = new THREE.Line(buffer, mtl);
 							line.frustumCulled = false;
 							scene.add(line);
 						}
 					}
-
-					counter++;
-					if (counter > latk.layers[0].frames.length-1) counter = 0;
+					if (performance.now() > markTime + timeInterval) {
+						markTime = performance.now();
+						counter++;
+						if (counter > latk.layers[0].frames.length-1) counter = 0;
+					}
 				}
 
 				renderer.render(scene, camera);
 				requestAnimationFrame(draw);
 			}
 
-			function clearScene(preserveList) {
+			function clearScene() {
 			    for (let obj of scene.children) {
-			        let doRemove = true;
-			        if (preserveList !== undefined) {
-				        for (let preserveObj of preserveList) {
-				            if (obj === preserveObj) {
-				                doRemove = false;
-				                break;
-				            }
-				        }
-			    	}
-			        if (doRemove) clearObj(obj);
+			        clearObj(obj);
 			    }
 			}
 
@@ -116,7 +109,7 @@
 
 			function createMtl(color) {
 			    let mtl = new THREE.LineBasicMaterial({
-			        color: new THREE.Color(color[0],color[1],color[2]),
+			        color: new THREE.Color(color[0],color[1],color[2],color[3]),
 			    });
 			    return mtl;
 			}
