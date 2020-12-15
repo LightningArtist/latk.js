@@ -35,55 +35,13 @@
 			const cameraNear = 0.1;
 			const cameraFar = 100;
 			const camera = new THREE.PerspectiveCamera(cameraFov, cameraAspect, cameraNear, cameraFar);
+			camera.position.set(0.3, 0.08, 1);
 
 			const scene = new THREE.Scene();
 			scene.background = new THREE.Color("#000000");  
 
 			let markTime = 0;
 			const timeInterval = 1/12*1000;
-
-			function setup() {
-				latk = Latk.read("latk_logo.latk");
-
-				draw();
-			}
-
-			function draw() {
-				renderer.clear();
-				clearScene();
-
-				if (latk.ready) {
-					for (let layer of latk.layers) {
-						for (let stroke of layer.frames[counter].strokes) {
-							let mtl = createMtl(stroke.color);
-							let buffer = new THREE.BufferGeometry();
-							let points = [];
-							for (let point of stroke.points) {
-								let co = new THREE.Vector3(point.co[0], point.co[1], point.co[2]);
-								points.push(co);
-							}
-							buffer.setFromPoints(points);
-							let line = new THREE.Line(buffer, mtl);
-							line.frustumCulled = false;
-							scene.add(line);
-						}
-					}
-					if (performance.now() > markTime + timeInterval) {
-						markTime = performance.now();
-						counter++;
-						if (counter > latk.layers[0].frames.length-1) counter = 0;
-					}
-				}
-
-				renderer.render(scene, camera);
-				requestAnimationFrame(draw);
-			}
-
-			function clearScene() {
-			    for (let obj of scene.children) {
-			        clearObj(obj);
-			    }
-			}
 
 			function clearObj(obj) {
 			    while (obj.children.length > 0) { 
@@ -107,6 +65,12 @@
 			    }
 			} 
 
+			function clearScene() {
+			    for (let obj of scene.children) {
+			        clearObj(obj);
+			    }
+			}
+
 			function createMtl(color) {
 			    let mtl = new THREE.LineBasicMaterial({
 			        color: new THREE.Color(color[0],color[1],color[2],color[3]),
@@ -119,6 +83,43 @@
 			    camera.lookAt(0, 0, 0);
 			    //phi = 0;
 			    //theta = 0;
+			}
+
+			function setup() {
+				latk = Latk.read("latk_logo.latk");
+
+				draw();
+			}
+
+			function draw() {
+				clearScene();
+
+				if (latk.ready) {
+					for (let layer of latk.layers) {
+						for (let stroke of layer.frames[counter].strokes) {
+							let mtl = createMtl(stroke.color);
+							let buffer = new THREE.BufferGeometry();
+							let points = [];
+							for (let point of stroke.points) {
+								let co = new THREE.Vector3(point.co[2], point.co[1], point.co[0]);
+								points.push(co);
+							}
+							buffer.setFromPoints(points);
+							let line = new THREE.Line(buffer, mtl);
+							line.frustumCulled = false;
+							scene.add(line);
+						}
+					}
+
+					if (performance.now() > markTime + timeInterval) {
+						markTime = performance.now();
+						counter++;
+						if (counter > latk.layers[0].frames.length-1) counter = 0;
+					}
+				}
+
+				requestAnimationFrame(draw);
+				renderer.render(scene, camera);
 			}
 
 			setup();
