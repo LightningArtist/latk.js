@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Example</title>
+		<style>
+			body {
+				background: black;
+				margin: 0px;
+			}
+
+			canvas { 
+				border: 1px solid white;
+			}
+		</style>
+		<script src="https://fox-gieg.com/js/libraries/threejs/122/three.min.js"></script>
+		<script src="../latk.js"></script>
+	</head>
+
+	<body>
+		<script>
+			"use strict";
+
+			let latk;
+			let counter = 0;
+
+			const renderer = new THREE.WebGLRenderer({ antialiasing: false, alpha: false, preserveDrawingBuffer: true });
+			renderer.setSize(960, 540);
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setClearColor(0x000000);
+
+			const exposure = 1.2;
+			renderer.toneMapping = THREE.ReinhardToneMapping;
+			renderer.toneMappingExposure = Math.pow(exposure, 4.0);
+			renderer.autoClear = false;
+			document.body.appendChild(renderer.domElement);
+
+			const cameraFov = 60;
+			const cameraAspect = 960 / 540;
+			const cameraNear = 0.1;
+			const cameraFar = 100;
+			const camera = new THREE.PerspectiveCamera(cameraFov, cameraAspect, cameraNear, cameraFar);
+			resetCameraPosition();
+
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color("#000000");  
+
+			function setup() {
+				latk = Latk.read("latk_logo.latk");
+
+				draw();
+			}
+
+			function draw() {
+				clearScene();
+
+				if (latk.ready) {
+					for (let layer of latk.layers) {
+						for (let stroke of layer.frames[counter].strokes) {
+							let mtl = createMtl(stroke.color);
+							let buffer = new THREE.BufferGeometry();
+							let points = [];
+							for (let point of stroke.points) {
+								let co = new THREE.Vector3(point.co[0], point.co[1], point.co[2]);
+								points.push(co);
+							}
+							let line = new THREE.Line(buffer, mtl);
+							line.frustumCulled = false;
+							scene.add(line);
+						}
+					}
+
+					counter++;
+					if (counter > latk.layers[0].frames.length-1) counter = 0;
+				}
+
+				renderer.render(scene, camera);
+				requestAnimationFrame(draw);
+			}
+
+			function clearScene(preserveList) {
+			    for (let obj of scene.children) {
+			        let doRemove = true;
+			        if (preserveList !== undefined) {
+				        for (let preserveObj of preserveList) {
+				            if (obj === preserveObj) {
+				                doRemove = false;
+				                break;
+				            }
+				        }
+			    	}
+			        if (doRemove) clearObj(obj);
+			    }
+			}
+
+			function clearObj(obj) {
+			    while (obj.children.length > 0) { 
+			        clearObj(obj.children[0]);
+			        obj.remove(obj.children[0]);
+			    }
+			    
+			    if (obj.geometry) obj.geometry.dispose();
+
+			    if (obj.material) { 
+			        // in case of map, bumpMap, normalMap, envMap ...
+			        Object.keys(obj.material).forEach(prop => {
+			            if (!obj.material[prop]) {
+			                return;         
+			            }
+			            if (obj.material[prop] !== null && typeof obj.material[prop].dispose === 'function') {
+			                obj.material[prop].dispose();
+			            }                                                  
+			        });
+			        obj.material.dispose();
+			    }
+			} 
+
+			function createMtl(color) {
+			    let mtl = new THREE.LineBasicMaterial({
+			        color: new THREE.Color(color[0],color[1],color[2]),
+			    });
+			    return mtl;
+			}
+
+			function resetCameraPosition() {
+			    camera.position.set(0, 0, 0);
+			    camera.lookAt(0, 0, 0);
+			    //phi = 0;
+			    //theta = 0;
+			}
+
+			setup();
+		</script>
+	</body>
+
+</html>

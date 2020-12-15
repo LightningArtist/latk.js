@@ -28,15 +28,16 @@
 
 			let counter = 0;
 			setInterval(function() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
 				if (latk.ready) {
-					ctx.clearRect(0, 0, canvas.width, canvas.height);
 					for (let layer of latk.layers) {
 						for (let stroke of layer.frames[counter].strokes) {
 							ctx.strokeStyle = "rgb(" + (stroke.color[0]*255) + "," + (stroke.color[1]*255) + "," + (stroke.color[2]*255) +")";
 							ctx.beginPath();
 							for (let point of stroke.points) {
-								let x = point.co[2] * canvas.height + canvas.width/3;
-								let y = point.co[1] * -canvas.height + canvas.height/2;
+								let x = point.co[2] * canvas.height + canvas.width/2.75;
+								let y = point.co[1] * -canvas.height + canvas.height/1.75;
 								ctx.lineTo(x, y);
 							}
 							ctx.stroke();
