@@ -28,7 +28,7 @@
 			}
 
 			function setup() {
-				createCanvas(960, 540);
+				createCanvas(960, 540, WEBGL);
 				frameRate(12);
 				noFill();
 			}
@@ -42,9 +42,10 @@
 							stroke(color(strokeObj.color[0]*255, strokeObj.color[1]*255, strokeObj.color[2]*255));
 							beginShape();
 							for (let point of strokeObj.points) {
-								let x = point.co[2] * height + width/2.75;
-								let y = point.co[1] * -height + height/1.75;
-								vertex(x, y);
+								let x = point.co[2] * height - height/4;
+								let y = point.co[1] * -height + height/12;
+								let z = point.co[0] * height;
+								vertex(x, y, z);
 							}
 							endShape();
 						}
