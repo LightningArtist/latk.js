@@ -27,8 +27,11 @@
 			renderer.setSize(960, 540);
 			renderer.setPixelRatio(window.devicePixelRatio);
 			renderer.setClearColor(0x000000);
-			renderer.autoClear = false;
+			renderer.autoClear = true;
 			document.body.appendChild(renderer.domElement);
+
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color("#000000");  
 
 			const cameraFov = 60;
 			const cameraAspect = 960 / 540;
@@ -37,11 +40,15 @@
 			const camera = new THREE.PerspectiveCamera(cameraFov, cameraAspect, cameraNear, cameraFar);
 			camera.position.set(0.3, 0.08, 1);
 
-			const scene = new THREE.Scene();
-			scene.background = new THREE.Color("#000000");  
-
 			let markTime = 0;
 			const timeInterval = 1/12*1000;
+
+			function clearScene() {
+			    for (let i=scene.children.length-1; i>=0; i--) {
+			        clearObj(scene.children[i]);
+			        scene.children.splice(i, 1);
+			    }
+			}
 
 			function clearObj(obj) {
 			    while (obj.children.length > 0) { 
@@ -65,24 +72,11 @@
 			    }
 			} 
 
-			function clearScene() {
-			    for (let obj of scene.children) {
-			        clearObj(obj);
-			    }
-			}
-
 			function createMtl(color) {
 			    let mtl = new THREE.LineBasicMaterial({
 			        color: new THREE.Color(color[0],color[1],color[2],color[3]),
 			    });
 			    return mtl;
-			}
-
-			function resetCameraPosition() {
-			    camera.position.set(0, 0, 0);
-			    camera.lookAt(0, 0, 0);
-			    //phi = 0;
-			    //theta = 0;
 			}
 
 			function setup() {
@@ -95,15 +89,18 @@
 				clearScene();
 
 				if (latk.ready) {
+
 					for (let layer of latk.layers) {
 						for (let stroke of layer.frames[counter].strokes) {
 							let mtl = createMtl(stroke.color);
 							let buffer = new THREE.BufferGeometry();
 							let points = [];
+
 							for (let point of stroke.points) {
 								let co = new THREE.Vector3(point.co[2], point.co[1], point.co[0]);
 								points.push(co);
 							}
+
 							buffer.setFromPoints(points);
 							let line = new THREE.Line(buffer, mtl);
 							line.frustumCulled = false;
