@@ -43,10 +43,21 @@
 			let markTime = 0;
 			const timeInterval = 1/12*1000;
 
-			function clearScene() {
+			function clearScene(preserveList) {
 			    for (let i=scene.children.length-1; i>=0; i--) {
-			        clearObj(scene.children[i]);
-			        scene.children.splice(i, 1);
+			        let doRemove = true;
+			        if (preserveList !== undefined) {
+			            for (let preserveObj of preserveList) {
+			                if (scene.children[i] === preserveObj) {
+			                    doRemove = false;
+			                    break;
+			                }
+			            }
+			        }
+			        if (doRemove) {
+			            clearObj(scene.children[i]);
+			            scene.children.splice(i, 1);
+			        }
 			    }
 			}
 
