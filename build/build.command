@@ -1,6 +1,7 @@
 #!/bin/bash
 
 BUILD_TARGET="../latk.js"
+BUILD_TARGET_MIN="../latk.min.js"
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
@@ -18,3 +19,8 @@ touch $BUILD_TARGET
 cat "latk-header.js" "libraries/jszip/jszip.min.js" "libraries/jszip/jszip-utils.min.js" "latk-point.js" "latk-stroke.js" "latk-frame.js" "latk-layer.js" "latk-main.js" > $BUILD_TARGET
 
 #cp $BUILD_TARGET "${HOME}/Library/Application Support/Blender/2.91/scripts/addons/"
+
+uglifyjs $BUILD_TARGET --compress --mangle --output $BUILD_TARGET_MIN
+
+
+
