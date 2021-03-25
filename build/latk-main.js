@@ -67,15 +67,13 @@ class Latk {
         return latk;
     }
 
-    static readJson(data) {
-        let latk = new Latk();
-        latk.layers = Latk.jsonToGp(data);
+    readJson(data) {
+        this.layers = Latk.jsonToGp(data);
         console.log("Latk loaded from json.");
-        latk.ready = true;
-        return latk;
+        this.ready = true;
     }
 
-    static readBase64(data) {
+    readBase64(data) {
         // TODO
     }
 

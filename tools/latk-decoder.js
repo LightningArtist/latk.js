@@ -147,53 +147,29 @@ class Latk {
     static read(animationPath) {
         let latk = new Latk();
 
-        if (animationPath.split(".")[animationPath.split(".").length-1] === "json") {
-            let xobj = new XMLHttpRequest();
-            xobj.overrideMimeType("application/json");
-            xobj.open('GET', animationPath, true);
-            xobj.onreadystatechange = function() {
-                if (xobj.readyState == 4 && xobj.status == "200") {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                    latk.layers = Latk.jsonToGp(JSON.parse(xobj.responseText));
-                    console.log("Latk loaded from json.");
-                    latk.ready = true;
-                }
-            };
-            xobj.send(null);  
-        } else {
-            JSZipUtils.getBinaryContent(animationPath, function(err, data) {
-                if (err) {
-                    throw err; // or handle err
-                }
-
-                var zip = new JSZip();
-                zip.loadAsync(data).then(function () {
-                        // https://github.com/Stuk/jszip/issues/375
-                        var entries = Object.keys(zip.files).map(function (name) {
-                          return zip.files[name];
-                        });
-
-                        zip.file(entries[0].name).async("string").then(function(response) {
-                            latk.layers = Latk.jsonToGp(JSON.parse(response));
-                            console.log("Latk loaded from zip.");
-                            latk.ready = true;
-                        });
-                });
-            });
-        }
+        let xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+        xobj.open('GET', animationPath, true);
+        xobj.onreadystatechange = function() {
+            if (xobj.readyState == 4 && xobj.status == "200") {
+                // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                latk.layers = Latk.jsonToGp(JSON.parse(xobj.responseText));
+                console.log("Latk loaded from json.");
+                latk.ready = true;
+            }
+        };
+        xobj.send(null);  
 
         return latk;
     }
 
-    static readJson(data) {
-        let latk = new Latk();
-        latk.layers = Latk.jsonToGp(data);
+    readJson(data) {
+        this.layers = Latk.jsonToGp(data);
         console.log("Latk loaded from json.");
-        latk.ready = true;
-        return latk;
+        this.ready = true;
     }
 
-    static readBase64(data) {
+    readBase64(data) {
         // TODO
     }
 
