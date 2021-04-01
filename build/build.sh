@@ -1,1 +1,0 @@
-rm $BUILD_TARGET
