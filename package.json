@@ -1,0 +1,25 @@
+{
+  "name": "latk",
+  "version": "1.0.0",
+  "description": "Read and write Latk files in JavaScript.",
+  "main": "latk.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LightningArtist/latk.js.git"
+  },
+  "keywords": [
+    "animation"
+  ],
+  "author": "Nick Fox-Gieg",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/LightningArtist/latk.js/issues"
+  },
+  "homepage": "https://github.com/LightningArtist/latk.js#readme"
+}
