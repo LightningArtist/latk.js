@@ -1,5 +1,5 @@
 
-// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ;
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class Latk {
 
@@ -26,13 +26,15 @@ class Latk {
         }
     }
 
-    static read(animationPath) {
+    static read(url) {
         let latk = new Latk();
 
-        if (animationPath.split(".")[animationPath.split(".").length-1] === "json") {
+        let extension = url.split(".")[url.split(".").length-1].toLowerCase();
+
+        if (extension === "json") {
             let xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
-            xobj.open('GET', animationPath, true);
+            xobj.open('GET', url, true);
             xobj.onreadystatechange = function() {
                 if (xobj.readyState == 4 && xobj.status == "200") {
                     // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
@@ -41,9 +43,9 @@ class Latk {
                     latk.ready = true;
                 }
             };
-            xobj.send(null);  
+            xobj.send(null); 
         } else {
-            JSZipUtils.getBinaryContent(animationPath, function(err, data) {
+            JSZipUtils.getBinaryContent(url, function(err, data) {
                 if (err) {
                     throw err; // or handle err
                 }

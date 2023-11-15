@@ -16,7 +16,7 @@ cd $DIR
 rm $BUILD_TARGET
 touch $BUILD_TARGET
 
-cat "latk-header.js" "libraries/jszip/jszip.min.js" "libraries/jszip/jszip-utils.min.js" "latk-point.js" "latk-stroke.js" "latk-frame.js" "latk-layer.js" "latk-main.js" > $BUILD_TARGET
+cat "latk-header.js" "libraries/jszip/jszip.min.js" "libraries/jszip/jszip-utils.min.js" "latk-tilt.js" "latk-quill.js" "latk-point.js" "latk-stroke.js" "latk-frame.js" "latk-layer.js" "latk-main.js" > $BUILD_TARGET
 
 uglifyjs $BUILD_TARGET --compress --mangle --output $BUILD_TARGET_MIN
 

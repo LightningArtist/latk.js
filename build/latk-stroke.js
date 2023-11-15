@@ -1,4 +1,6 @@
 
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
 class LatkStroke {
 
     constructor(points, color, fill_color) {

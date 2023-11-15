@@ -1,2 +1,2 @@
-npm install -g uglify-js
+sudo npm install -g uglify-js
 

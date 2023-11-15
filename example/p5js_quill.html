@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>p5.quill.js basic read</title>
+		<style>
+			body {
+				background: gray;
+			}
+		</style>
+		<script src="https://fox-gieg.com/js/libraries/p5js/1.1.9/p5.min.js"></script>
+		<script src="../latk.js"></script>
+	</head>
+
+	<body>
+		<script>
+			"use strict";
+
+			let ql;
+			let firstRun = true;
+
+			function setup() {
+				createCanvas(800, 600, WEBGL);
+				ql = QuillLoader.read("grass_00.quill"); // Quill drawing by @cabbibo
+			}
+
+			function draw() {
+				background(100);
+				orbitControl();
+
+				if (ql.ready) {
+					if (firstRun) {
+						for (let qs of ql.strokes) {
+							qs.brushSize *= 15;
+							for (let p of qs.positions) {
+								p.mult(100);
+							}
+						}
+						firstRun = false;
+					}
+
+					push();
+					translate(0, 10, 300);
+					rotateX(radians(90));
+					rotateY(radians(90));
+					rotateZ(radians(90));
+
+					for (let qs of ql.strokes) {
+						stroke(qs.brushColor);
+						strokeWeight(qs.brushSize);
+						noFill();
+						beginShape(TRIANGLE_STRIP);
+						for (let p of qs.positions) {
+							vertex(p.x, p.y, p.z);
+						}
+						endShape();
+					}
+
+					pop();
+				}
+			}
+		</script>
+	</body>
+
+</html>

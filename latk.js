@@ -5,7 +5,7 @@ The Lightning Artist Toolkit was developed with support from:
    Ontario Arts Council
    Toronto Arts Council
    
-Copyright (c) 2020 Nick Fox-Gieg
+Copyright (c) 2023 Nick Fox-Gieg
 https://fox-gieg.com
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,7 +51,249 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
 
 */
 !function(a){"object"==typeof exports?module.exports=a():"function"==typeof define&&define.amd?define(a):"undefined"!=typeof window?window.JSZipUtils=a():"undefined"!=typeof global?global.JSZipUtils=a():"undefined"!=typeof self&&(self.JSZipUtils=a())}(function(){return function a(b,c,d){function e(g,h){if(!c[g]){if(!b[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);throw new Error("Cannot find module '"+g+"'")}var j=c[g]={exports:{}};b[g][0].call(j.exports,function(a){var c=b[g][1][a];return e(c?c:a)},j,j.exports,a,b,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b){"use strict";function c(){try{return new window.XMLHttpRequest}catch(a){}}function d(){try{return new window.ActiveXObject("Microsoft.XMLHTTP")}catch(a){}}var e={};e._getBinaryFromXHR=function(a){return a.response||a.responseText};var f=window.ActiveXObject?function(){return c()||d()}:c;e.getBinaryContent=function(a,b){try{var c=f();c.open("GET",a,!0),"responseType"in c&&(c.responseType="arraybuffer"),c.overrideMimeType&&c.overrideMimeType("text/plain; charset=x-user-defined"),c.onreadystatechange=function(){var d,f;if(4===c.readyState)if(200===c.status||0===c.status){d=null,f=null;try{d=e._getBinaryFromXHR(c)}catch(g){f=new Error(g)}b(f,d)}else b(new Error("Ajax error for "+a+" : "+this.status+" "+this.statusText),null)},c.send()}catch(d){b(new Error(d),null)}},b.exports=e},{}]},{},[1])(1)});
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
+class TiltLoader {
+
+	constructor() {
+		this.ready = false;
+		this.json;
+		this.bytes;
+		this.strokes = [];
+		this.numStrokes;
+	}
+
+	static read(url) {
+        let tl = new TiltLoader();
+
+            JSZipUtils.getBinaryContent(url, function(err, data) {
+                if (err) {
+                    throw err; // or handle err
+                }
+
+                let zip = new JSZip();
+                zip.loadAsync(data).then(function () {
+                    // https://github.com/Stuk/jszip/issues/375
+                    let entries = Object.keys(zip.files).map(function (name) {
+                      return zip.files[name];
+                    });
+
+					// A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
+                    zip.file("metadata.json").async("string").then(function(response) {
+                        tl.json = JSON.parse(response);
+
+	                    zip.file("data.sketch").async("arraybuffer").then(function(response) {
+	                        tl.bytes = new Uint8Array(response);
+	                        tl.parse();
+	                        //console.log("read " + tl.bytes.length + " bytes");
+	                        tl.ready = true;
+	                    });
+                    });
+                });
+            });     
+
+	    return tl;
+    }
+
+	// https://docs.google.com/document/d/11ZsHozYn9FnWG7y3s3WAyKIACfbfwb4PbaS8cZ_xjvo/edit#
+	parse() {
+		const data = new DataView(this.bytes.buffer);
+
+		this.numStrokes = data.getInt32(16, true);
+
+		let offset = 20;
+
+		for (let i = 0; i < this.numStrokes; i++) {
+			const brushIndex = data.getInt32(offset, true);
+
+			let r = data.getFloat32(offset + 4, true) * 255;
+			let g = data.getFloat32(offset + 8, true) * 255;
+			let b = data.getFloat32(offset + 12, true) * 255;
+			let a = data.getFloat32(offset + 16, true) * 255;
+
+			const brushColor = color(r, g, b, a);
+
+			const brushSize = data.getFloat32(offset + 20, true);
+			const strokeMask = data.getUint32(offset + 24, true);
+			const controlPointMask = data.getUint32(offset + 28, true);
+
+			let offsetStrokeMask = 0;
+			let offsetControlPointMask = 0;
+
+			for (let j = 0; j < 4; j++) {
+				const byte = 1 << j;
+				if ((strokeMask & byte) > 0) offsetStrokeMask += 4;
+				if ((controlPointMask & byte) > 0) offsetControlPointMask += 4;
+			}
+
+			offset += 28 + offsetStrokeMask + 4; 
+
+			const numControlPoints = data.getInt32(offset, true);
+
+			let positions = []; //new Float32Array(numControlPoints * 3);
+			//let quaternions = []; //new Float32Array(numControlPoints * 4);
+
+			offset += 4;
+
+			for (let j = 0; j < numControlPoints; j++) {
+				let x = data.getFloat32(offset + 0, true);
+				let y = data.getFloat32(offset + 4, true);
+				let z = data.getFloat32(offset + 8, true);
+				positions.push(createVector(x, y, z));
+
+				//qw = data.getFloat32(offset + 12, true);
+				//qx = data.getFloat32(offset + 16, true);
+				//qy = data.getFloat32(offset + 20, true);
+				//qz = data.getFloat32(offset + 24, true);
+
+				offset += 28 + offsetControlPointMask; 
+			}
+
+			let tiltStroke = new TiltStroke(positions, brushSize, brushColor);
+			this.strokes.push(tiltStroke);
+		}
+	}
+
+}
+
+
+class TiltStroke {
+
+	constructor(_positions, _brushSize, _brushColor) {
+		this.positions = _positions;
+		this.brushSize = _brushSize;
+		this.brushColor = _brushColor;
+	}
+
+}
+
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
+class QuillLoader {
+
+	constructor() {
+		this.ready = false;
+		this.json;
+		this.bytes;
+		this.strokes = [];
+		this.numStrokes;
+	}
+
+	static read(url) {
+        let ql = new QuillLoader();
+
+            JSZipUtils.getBinaryContent(url, function(err, data) {
+                if (err) {
+                    throw err; // or handle err
+                }
+
+                let zip = new JSZip();
+                zip.loadAsync(data).then(function () {
+                    // https://github.com/Stuk/jszip/issues/375
+                    let entries = Object.keys(zip.files).map(function (name) {
+                      return zip.files[name];
+                    });
+
+					// A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
+                    zip.file("Quill.json").async("string").then(function(response) {
+                        ql.json = JSON.parse(response);
+
+	                    zip.file("Quill.qbin").async("arraybuffer").then(function(response) {
+	                        ql.bytes = new Uint8Array(response);
+	                        ql.parse();
+	                        //console.log("read " + ql.bytes.length + " bytes");
+	                        ql.ready = true;
+	                    });
+                    });
+                });
+            });     
+
+	    return ql;
+    }
+
+	parse() {
+		const data = new DataView(this.bytes.buffer);
+
+		const children = this.json["Sequence"]["RootLayer"]["Implementation"]["Children"];
+
+		for (let i=0; i < children.length; i++) {
+  			const childNode = children[i];
+
+			// skip the child node if it contains no drawings
+			let drawingCount = 0;
+			try {
+				drawingCount = childNode["Implementation"]["Drawings"].length;
+			} catch (e) { 
+				continue;
+			}
+
+			for (let j=0; j < drawingCount; j++) {
+				const drawingNode  = childNode["Implementation"]["Drawings"][j];
+
+				const dataFileOffsetString = drawingNode["DataFileOffset"];
+
+				const dataFileOffset = parseInt("0x" + dataFileOffsetString);
+
+				const numNodeStrokes = data.getInt32(dataFileOffset, true);
+				this.numStrokes += numNodeStrokes;
+
+				let offset = dataFileOffset + 4;
+
+				for (let k = 0; k < numNodeStrokes; k++) {
+					offset += 36;
+					
+					const numVertices = data.getInt32(offset, true);
+
+					const positions = [];
+					const colors = [];
+					const widths = [];
+
+					offset += 4;
+
+					for (let l = 0; l < numVertices; l++) {
+						const x = data.getFloat32(offset + 0, true); // x
+						const y = data.getFloat32(offset + 4, true); // y
+						const z = data.getFloat32(offset + 8, true); // z
+						positions.push(createVector(x, y, z));
+
+						offset += 36;
+
+						const r = data.getFloat32(offset + 0, true) * 255; // r
+						const g = data.getFloat32(offset + 4, true) * 255; // g
+						const b = data.getFloat32(offset + 8, true) * 255; // b
+						const a = data.getFloat32(offset + 12, true) * 255; // a
+						colors.push(color(r, g, b, a));
+
+						offset += 16;
+
+						widths.push(data.getFloat32(offset + 0, true));
+
+						offset += 4;
+					}
+					
+					const brushSize = widths[parseInt(widths.length/2)];
+					const brushColor = colors[parseInt(colors.length/2)];
+					const quillStroke = new QuillStroke(positions, brushSize, brushColor);
+					this.strokes.push(quillStroke);
+				}
+			}
+		}
+	}
+
+}
+
+
+class QuillStroke {
+
+	constructor(_positions, _brushSize, _brushColor) {
+		this.positions = _positions;
+		this.brushSize = _brushSize;
+		this.brushColor = _brushColor;
+	}
+
+}
+
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkPoint {
 
@@ -71,6 +313,8 @@ class LatkPoint {
 
 }
 
+
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkStroke {
 
@@ -120,6 +364,8 @@ class LatkStroke {
 }
 
 
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
 class LatkFrame {
 
     constructor(frame_number) {
@@ -137,6 +383,8 @@ class LatkFrame {
 
 }
 
+
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 class LatkLayer {
 
@@ -202,7 +450,9 @@ class Latk {
     static read(animationPath) {
         let latk = new Latk();
 
-        if (animationPath.split(".")[animationPath.split(".").length-1] === "json") {
+        let extension = animationPath.split(".")[animationPath.split(".").length-1].toLowerCase();
+
+        if (extension === "json") {
             let xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
             xobj.open('GET', animationPath, true);

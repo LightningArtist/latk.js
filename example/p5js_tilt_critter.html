@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>p5.tilt.js tilt critter</title>
+		<style>
+			body {
+				background: gray;
+			}
+		</style>
+		<script src="https://fox-gieg.com/js/libraries/p5js/1.1.9/p5.min.js"></script>
+		<script src="../latk.js"></script>
+	</head>
+
+	<body>
+		<script>
+			"use strict";
+
+			let tl;
+			let firstRun = true;
+
+			function setup() {
+				createCanvas(800, 600, WEBGL);
+				tl = TiltLoader.read("Untitled_2.tilt");
+			}
+
+			function draw() {
+				background(0);
+				orbitControl();
+
+				if (tl.ready) {
+					if (firstRun) {
+						for (let ts of tl.strokes) {
+							ts.brushSize *= 15;
+							for (let p of ts.positions) {
+								p.mult(10);
+							}
+						}
+						firstRun = false;
+					}
+
+					push();
+					translate(15, 80, 280);
+					rotateX(radians(90));
+					rotateY(radians(90));
+					rotateZ(radians(90));
+
+					for (let ts of tl.strokes) {
+						stroke(ts.brushColor);
+						strokeWeight(ts.brushSize);
+						noFill();
+						beginShape(TRIANGLE_STRIP);
+						for (let p of ts.positions) {
+							vertex(p.x, p.y, p.z);
+						}
+						endShape();
+					}
+
+					pop();
+				}
+			}
+		</script>
+	</body>
+
+</html>
