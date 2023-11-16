@@ -69,6 +69,10 @@ class Latk {
         return latk;
     }
 
+    readTiltBrush(url) {
+        const tilt = TiltLoader.read(url);
+    }
+
     readJson(data) {
         this.layers = Latk.jsonToGp(data);
         console.log("Latk loaded from json.");
