@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html>
-
 	<head>
-		<title>p5.tilt.js basic read</title>
+		<title>Example</title>
 		<style>
 			body {
-				background: gray;
+				background: black;
+				margin: 0px;
+			}
+
+			canvas { 
+				border: 1px solid white;
 			}
 		</style>
 		<script src="https://fox-gieg.com/js/libraries/p5js/1.1.9/p5.min.js"></script>
@@ -16,47 +20,39 @@
 		<script>
 			"use strict";
 
-			let tl;
-			let firstRun = true;
+			let latk;
+			let counter = 0;
+
+			function preload() {
+				latk = Latk.read("latk_logo.latk");
+			}
 
 			function setup() {
-				createCanvas(800, 600, WEBGL);
-				tl = TiltLoader.read("sketch.tilt");
+				createCanvas(960, 540, WEBGL);
+				frameRate(12);
+				noFill();
 			}
 
 			function draw() {
-				background(100);
-				orbitControl();
+				background(0);
 
-				if (tl.ready) {
-					if (firstRun) {
-						for (let ts of tl.strokes) {
-							ts.brushSize *= 15;
-							for (let p of ts.positions) {
-								p.mult(10);
+				if (latk.ready) {
+					for (let layer of latk.layers) {
+						for (let strokeObj of layer.frames[counter].strokes) {
+							stroke(color(strokeObj.color[0]*255, strokeObj.color[1]*255, strokeObj.color[2]*255));
+							beginShape();
+							for (let point of strokeObj.points) {
+								let x = point.co[2] * height - height/4;
+								let y = point.co[1] * -height + height/12;
+								let z = point.co[0] * height;
+								vertex(x, y, z);
 							}
+							endShape();
 						}
-						firstRun = false;
 					}
 
-					push();
-					translate(-80, 120, 300);
-					rotateX(radians(90));
-					rotateY(radians(90));
-					rotateZ(radians(90));
-
-					for (let ts of tl.strokes) {
-						stroke(ts.brushColor);
-						strokeWeight(ts.brushSize);
-						noFill();
-						beginShape(TRIANGLE_STRIP);
-						for (let p of ts.positions) {
-							vertex(p.x, p.y, p.z);
-						}
-						endShape();
-					}
-
-					pop();
+					counter++;
+					if (counter > latk.layers[0].frames.length-1) counter = 0;
 				}
 			}
 		</script>
