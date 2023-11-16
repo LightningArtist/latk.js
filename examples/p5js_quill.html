@@ -24,7 +24,7 @@
 			let counter = 0;
 
 			function preload() {
-				latk = Latk.readTiltBrush("./files/sketch.tilt");
+				latk = Latk.readQuill("./files/grass_00.quill");
 			}
 
 			function setup() {
@@ -43,9 +43,9 @@
 							stroke(strokeObj.color);
 							beginShape();
 							for (let point of strokeObj.points) {
-								let x = point.co[2] * 10; //height - height/4;
-								let y = point.co[1] * -10 + height/5; //* -height + height/12;
-								let z = point.co[0] * 10; //* height;
+								let x = point.co[2] * 100; //height - height/4;
+								let y = point.co[1] * -100 + height/5; //* -height + height/12;
+								let z = point.co[0] * 100; //* height;
 								vertex(x, y, z);
 							}
 							endShape();

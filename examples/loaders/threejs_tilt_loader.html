@@ -41,7 +41,7 @@
 				document.body.appendChild(renderer.domElement);
 
 				const loader = new THREE.TiltLoader();
-				loader.load('./sketch.tilt', function(object) {
+				loader.load('../files/sketch.tilt', function(object) {
 					// console.log(object.children.length);
 					scene.add(object);
 					render();

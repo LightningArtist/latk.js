@@ -186,31 +186,31 @@ class QuillLoader {
 	static read(url) {
         let ql = new QuillLoader();
 
-            JSZipUtils.getBinaryContent(url, function(err, data) {
-                if (err) {
-                    throw err; // or handle err
-                }
+        JSZipUtils.getBinaryContent(url, function(err, data) {
+            if (err) {
+                throw err; // or handle err
+            }
 
-                let zip = new JSZip();
-                zip.loadAsync(data).then(function () {
-                    // https://github.com/Stuk/jszip/issues/375
-                    let entries = Object.keys(zip.files).map(function (name) {
-                      return zip.files[name];
-                    });
+            let zip = new JSZip();
+            zip.loadAsync(data).then(function () {
+                // https://github.com/Stuk/jszip/issues/375
+                let entries = Object.keys(zip.files).map(function (name) {
+                  return zip.files[name];
+                });
 
-					// A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
-                    zip.file("Quill.json").async("string").then(function(response) {
-                        ql.json = JSON.parse(response);
+				// A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
+                zip.file("Quill.json").async("string").then(function(response) {
+                    ql.json = JSON.parse(response);
 
-	                    zip.file("Quill.qbin").async("arraybuffer").then(function(response) {
-	                        ql.bytes = new Uint8Array(response);
-	                        ql.parse();
-	                        //console.log("read " + ql.bytes.length + " bytes");
-	                        ql.ready = true;
-	                    });
+                    zip.file("Quill.qbin").async("arraybuffer").then(function(response) {
+                        ql.bytes = new Uint8Array(response);
+                        ql.parse();
+                        //console.log("read " + ql.bytes.length + " bytes");
+                        ql.ready = true;
                     });
                 });
-            });     
+            });
+        });     
 
 	    return ql;
     }
@@ -526,6 +526,50 @@ class Latk {
                                 points.push(new LatkPoint([p[0], p[1], p[2]]));
                             }
                             const stroke = new LatkStroke(points, ts.brushColor);
+                            latk.layers[0].frames[0].strokes.push(stroke);
+                        }
+
+                        latk.ready = true;
+                    });
+                });
+            });
+        });     
+
+        return latk;
+    }
+
+    static readQuill(url) {
+        let ql = new QuillLoader();
+        let latk = new Latk(true);
+
+        JSZipUtils.getBinaryContent(url, function(err, data) {
+            if (err) {
+                throw err; // or handle err
+            }
+
+            let zip = new JSZip();
+            zip.loadAsync(data).then(function () {
+                // https://github.com/Stuk/jszip/issues/375
+                let entries = Object.keys(zip.files).map(function (name) {
+                  return zip.files[name];
+                });
+
+                // A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
+                zip.file("Quill.json").async("string").then(function(response) {
+                    ql.json = JSON.parse(response);
+
+                    zip.file("Quill.qbin").async("arraybuffer").then(function(response) {
+                        ql.bytes = new Uint8Array(response);
+                        ql.parse();
+                        //console.log("read " + ql.bytes.length + " bytes");
+                        ql.ready = true;
+
+                        for (let qs of ql.strokes) {
+                            let points = []
+                            for (let p of qs.positions) {
+                                points.push(new LatkPoint([p[0], p[1], p[2]]));
+                            }
+                            const stroke = new LatkStroke(points, qs.brushColor);
                             latk.layers[0].frames[0].strokes.push(stroke);
                         }
 

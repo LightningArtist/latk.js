@@ -16,31 +16,31 @@ class QuillLoader {
 	static read(url) {
         let ql = new QuillLoader();
 
-            JSZipUtils.getBinaryContent(url, function(err, data) {
-                if (err) {
-                    throw err; // or handle err
-                }
+        JSZipUtils.getBinaryContent(url, function(err, data) {
+            if (err) {
+                throw err; // or handle err
+            }
 
-                let zip = new JSZip();
-                zip.loadAsync(data).then(function () {
-                    // https://github.com/Stuk/jszip/issues/375
-                    let entries = Object.keys(zip.files).map(function (name) {
-                      return zip.files[name];
-                    });
+            let zip = new JSZip();
+            zip.loadAsync(data).then(function () {
+                // https://github.com/Stuk/jszip/issues/375
+                let entries = Object.keys(zip.files).map(function (name) {
+                  return zip.files[name];
+                });
 
-					// A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
-                    zip.file("Quill.json").async("string").then(function(response) {
-                        ql.json = JSON.parse(response);
+				// A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
+                zip.file("Quill.json").async("string").then(function(response) {
+                    ql.json = JSON.parse(response);
 
-	                    zip.file("Quill.qbin").async("arraybuffer").then(function(response) {
-	                        ql.bytes = new Uint8Array(response);
-	                        ql.parse();
-	                        //console.log("read " + ql.bytes.length + " bytes");
-	                        ql.ready = true;
-	                    });
+                    zip.file("Quill.qbin").async("arraybuffer").then(function(response) {
+                        ql.bytes = new Uint8Array(response);
+                        ql.parse();
+                        //console.log("read " + ql.bytes.length + " bytes");
+                        ql.ready = true;
                     });
                 });
-            });     
+            });
+        });     
 
 	    return ql;
     }
