@@ -1,10 +1,10 @@
 {
   "name": "latk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Read and write Latk files in JavaScript.",
   "main": "latk.js",
   "directories": {
-    "example": "example"
+    "examples": "examples"
   },
   "scripts": {
     "test": "echo \"No test specified\""
