@@ -5,18 +5,17 @@
 		<title>three.js webgl - quill loader</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<link type="text/css" rel="stylesheet" href="./css/main.css">
+		<style>
+			body {
+				margin: 0px;
+			}
+		</style>
 		<script src="https://fox-gieg.com/js/libraries/fflate/fflate.js"></script>
 		<script src="https://fox-gieg.com/js/libraries/threejs/133/three.min.js"></script>
 		<script src="https://fox-gieg.com/js/libraries/threejs/133/controls/OrbitControls.js"></script>
-		<script src="./js/QuillLoader.js"></script>
 	</head>
 
 	<body>
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - quill loader<br/>
-		</div>
-
 		<script>
 			"use strict";
 
@@ -150,7 +149,7 @@
 				document.body.appendChild(renderer.domElement);
 
 				const loader = new THREE.QuillLoader();
-				loader.load("./files/grass_00.quill", function() {
+				loader.load("./grass_00.quill", function() {
 					render();
 				});
 

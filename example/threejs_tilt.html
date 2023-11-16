@@ -5,7 +5,11 @@
 		<title>three.js webgl - tilt loader</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<link type="text/css" rel="stylesheet" href="./css/main.css">
+		<style>
+			body {
+				margin: 0px;
+			}
+		</style>
 		<script src="https://fox-gieg.com/js/libraries/fflate/fflate.js"></script>
 		<script src="https://fox-gieg.com/js/libraries/threejs/133/three.min.js"></script>
 		<script src="https://fox-gieg.com/js/libraries/threejs/133/controls/OrbitControls.js"></script>
@@ -13,11 +17,6 @@
 	</head>
 
 	<body>
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - tilt loader<br/>
-			<a href="https://poly.google.com/view/ewUb8s99x_k" target="_blank" rel="noopener">TILTSPHERE</a> by <a href="https://poly.google.com/user/8CZPjCt8LvV" target="_blank" rel="noopener">Rosie Summers</a>
-		</div>
-
 		<script>
 			let camera, scene, renderer;
 
@@ -42,7 +41,7 @@
 				document.body.appendChild(renderer.domElement);
 
 				const loader = new THREE.TiltLoader();
-				loader.load('./files/BRUSH_DOME.tilt', function(object) {
+				loader.load('./sketch.tilt', function(object) {
 					// console.log(object.children.length);
 					scene.add(object);
 					render();
