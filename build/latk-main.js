@@ -69,8 +69,48 @@ class Latk {
         return latk;
     }
 
-    readTiltBrush(url) {
-        const tilt = TiltLoader.read(url);
+    static readTiltBrush(url) {
+        let tl = new TiltLoader();
+        let latk = new Latk(true);
+
+        JSZipUtils.getBinaryContent(url, function(err, data) {
+            if (err) {
+                throw err; // or handle err
+            }
+
+            let zip = new JSZip();
+            zip.loadAsync(data).then(function () {
+                // https://github.com/Stuk/jszip/issues/375
+                let entries = Object.keys(zip.files).map(function (name) {
+                  return zip.files[name];
+                });
+
+                // A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
+                zip.file("metadata.json").async("string").then(function(response) {
+                    tl.json = JSON.parse(response);
+
+                    zip.file("data.sketch").async("arraybuffer").then(function(response) {
+                        tl.bytes = new Uint8Array(response);
+                        tl.parse();
+                        //console.log("read " + tl.bytes.length + " bytes");
+                        tl.ready = true;
+
+                        for (let ts of tl.strokes) {
+                            let points = []
+                            for (let p of ts.positions) {
+                                points.push(new LatkPoint([p[0], p[1], p[2]]));
+                            }
+                            const stroke = new LatkStroke(points, ts.brushColor);
+                            latk.layers[0].frames[0].strokes.push(stroke);
+                        }
+
+                        latk.ready = true;
+                    });
+                });
+            });
+        });     
+
+        return latk;
     }
 
     readJson(data) {

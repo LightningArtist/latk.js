@@ -32,8 +32,9 @@
 					if (firstRun) {
 						for (let ts of tl.strokes) {
 							ts.brushSize *= 15;
-							for (let p of ts.positions) {
-								p.mult(10);
+							for (let i=0; i<ts.positions.length; i++) {
+								let p = ts.positions[i];
+								ts.positions[i] = createVector(p[0], p[1], p[2]).mult(10);
 							}
 						}
 						firstRun = false;

@@ -32,8 +32,9 @@
 					if (firstRun) {
 						for (let qs of ql.strokes) {
 							qs.brushSize *= 15;
-							for (let p of qs.positions) {
-								p.mult(100);
+							for (let i=0; i<qs.positions.length; i++) {
+								let p = qs.positions[i];
+								qs.positions[i] = createVector(p[0], p[1], p[2]).mult(100);
 							}
 						}
 						firstRun = false;

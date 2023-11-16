@@ -24,7 +24,7 @@
 			let counter = 0;
 
 			function preload() {
-				latk = Latk.read("latk_logo.latk");
+				latk = Latk.readTiltBrush("sketch.tilt");
 			}
 
 			function setup() {
@@ -39,12 +39,13 @@
 				if (latk.ready) {
 					for (let layer of latk.layers) {
 						for (let strokeObj of layer.frames[counter].strokes) {
-							stroke(color(strokeObj.color[0]*255, strokeObj.color[1]*255, strokeObj.color[2]*255));
+							//stroke(color(strokeObj.color[0]*255, strokeObj.color[1]*255, strokeObj.color[2]*255));
+							stroke(strokeObj.color);
 							beginShape();
 							for (let point of strokeObj.points) {
-								let x = point.co[2] * height - height/4;
-								let y = point.co[1] * -height + height/12;
-								let z = point.co[0] * height;
+								let x = point.co[2] * 10; //height - height/4;
+								let y = point.co[1] * -10 + height/5; //* -height + height/12;
+								let z = point.co[0] * 10; //* height;
 								vertex(x, y, z);
 							}
 							endShape();

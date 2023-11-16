@@ -88,7 +88,7 @@ class QuillLoader {
 						const x = data.getFloat32(offset + 0, true); // x
 						const y = data.getFloat32(offset + 4, true); // y
 						const z = data.getFloat32(offset + 8, true); // z
-						positions.push(createVector(x, y, z));
+						positions.push([x, y, z]);
 
 						offset += 36;
 
@@ -96,7 +96,7 @@ class QuillLoader {
 						const g = data.getFloat32(offset + 4, true) * 255; // g
 						const b = data.getFloat32(offset + 8, true) * 255; // b
 						const a = data.getFloat32(offset + 12, true) * 255; // a
-						colors.push(color(r, g, b, a));
+						colors.push([r, g, b, a]);
 
 						offset += 16;
 

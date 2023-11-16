@@ -68,31 +68,31 @@ class TiltLoader {
 	static read(url) {
         let tl = new TiltLoader();
 
-            JSZipUtils.getBinaryContent(url, function(err, data) {
-                if (err) {
-                    throw err; // or handle err
-                }
+        JSZipUtils.getBinaryContent(url, function(err, data) {
+            if (err) {
+                throw err; // or handle err
+            }
 
-                let zip = new JSZip();
-                zip.loadAsync(data).then(function () {
-                    // https://github.com/Stuk/jszip/issues/375
-                    let entries = Object.keys(zip.files).map(function (name) {
-                      return zip.files[name];
-                    });
+            let zip = new JSZip();
+            zip.loadAsync(data).then(function () {
+                // https://github.com/Stuk/jszip/issues/375
+                let entries = Object.keys(zip.files).map(function (name) {
+                  return zip.files[name];
+                });
 
-					// A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
-                    zip.file("metadata.json").async("string").then(function(response) {
-                        tl.json = JSON.parse(response);
+				// A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
+                zip.file("metadata.json").async("string").then(function(response) {
+                    tl.json = JSON.parse(response);
 
-	                    zip.file("data.sketch").async("arraybuffer").then(function(response) {
-	                        tl.bytes = new Uint8Array(response);
-	                        tl.parse();
-	                        //console.log("read " + tl.bytes.length + " bytes");
-	                        tl.ready = true;
-	                    });
+                    zip.file("data.sketch").async("arraybuffer").then(function(response) {
+                        tl.bytes = new Uint8Array(response);
+                        tl.parse();
+                        //console.log("read " + tl.bytes.length + " bytes");
+                        tl.ready = true;
                     });
                 });
-            });     
+            });
+        });     
 
 	    return tl;
     }
@@ -113,7 +113,7 @@ class TiltLoader {
 			let b = data.getFloat32(offset + 12, true) * 255;
 			let a = data.getFloat32(offset + 16, true) * 255;
 
-			const brushColor = color(r, g, b, a);
+			const brushColor = [r, g, b, a];
 
 			const brushSize = data.getFloat32(offset + 20, true);
 			const strokeMask = data.getUint32(offset + 24, true);
@@ -141,7 +141,7 @@ class TiltLoader {
 				let x = data.getFloat32(offset + 0, true);
 				let y = data.getFloat32(offset + 4, true);
 				let z = data.getFloat32(offset + 8, true);
-				positions.push(createVector(x, y, z));
+				positions.push([x, y, z]);
 
 				//qw = data.getFloat32(offset + 12, true);
 				//qx = data.getFloat32(offset + 16, true);
@@ -258,7 +258,7 @@ class QuillLoader {
 						const x = data.getFloat32(offset + 0, true); // x
 						const y = data.getFloat32(offset + 4, true); // y
 						const z = data.getFloat32(offset + 8, true); // z
-						positions.push(createVector(x, y, z));
+						positions.push([x, y, z]);
 
 						offset += 36;
 
@@ -266,7 +266,7 @@ class QuillLoader {
 						const g = data.getFloat32(offset + 4, true) * 255; // g
 						const b = data.getFloat32(offset + 8, true) * 255; // b
 						const a = data.getFloat32(offset + 12, true) * 255; // a
-						colors.push(color(r, g, b, a));
+						colors.push([r, g, b, a]);
 
 						offset += 16;
 
@@ -490,6 +490,50 @@ class Latk {
                 });
             });
         }
+
+        return latk;
+    }
+
+    static readTiltBrush(url) {
+        let tl = new TiltLoader();
+        let latk = new Latk(true);
+
+        JSZipUtils.getBinaryContent(url, function(err, data) {
+            if (err) {
+                throw err; // or handle err
+            }
+
+            let zip = new JSZip();
+            zip.loadAsync(data).then(function () {
+                // https://github.com/Stuk/jszip/issues/375
+                let entries = Object.keys(zip.files).map(function (name) {
+                  return zip.files[name];
+                });
+
+                // A tilt zipfile should contain three items: thumbnail.png, data.sketch, metadata.json
+                zip.file("metadata.json").async("string").then(function(response) {
+                    tl.json = JSON.parse(response);
+
+                    zip.file("data.sketch").async("arraybuffer").then(function(response) {
+                        tl.bytes = new Uint8Array(response);
+                        tl.parse();
+                        //console.log("read " + tl.bytes.length + " bytes");
+                        tl.ready = true;
+
+                        for (let ts of tl.strokes) {
+                            let points = []
+                            for (let p of ts.positions) {
+                                points.push(new LatkPoint([p[0], p[1], p[2]]));
+                            }
+                            const stroke = new LatkStroke(points, ts.brushColor);
+                            latk.layers[0].frames[0].strokes.push(stroke);
+                        }
+
+                        latk.ready = true;
+                    });
+                });
+            });
+        });     
 
         return latk;
     }
