@@ -38,7 +38,7 @@
 			const cameraNear = 0.1;
 			const cameraFar = 100;
 			const camera = new THREE.PerspectiveCamera(cameraFov, cameraAspect, cameraNear, cameraFar);
-			camera.position.set(0.265, 0.08, 0.85);
+			camera.position.set(-1.8, 7.5, 19);
 
 			let markTime = 0;
 			const timeInterval = 1/12*1000;
@@ -91,7 +91,7 @@
 			}
 
 			function setup() {
-				latk = Latk.read("./files/latk_logo.latk");
+				latk = Latk.readTiltBrush("./files/Untitled_2.tilt");
 
 				draw();
 			}
@@ -103,7 +103,8 @@
 
 					for (let layer of latk.layers) {
 						for (let stroke of layer.frames[counter].strokes) {
-							let mtl = createMtl(stroke.color);
+							const col = [ stroke.color[0] / 255.0, stroke.color[1] / 255.0,stroke.color[2] / 255.0,stroke.color[3] / 255.0 ];
+							let mtl = createMtl(col);
 							let buffer = new THREE.BufferGeometry();
 							let points = [];
 
