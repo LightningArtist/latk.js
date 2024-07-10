@@ -12,7 +12,7 @@
 				border: 1px solid white;
 			}
 		</style>
-		<script src="./js/three.min.js"></script>
+		<script src="./js/threejs/three.min.js"></script>
 		<script src="../latk.js"></script>
 	</head>
 
@@ -90,13 +90,13 @@
 			    return mtl;
 			}
 
-			function setup() {
+			function init() {
 				latk = Latk.read("./files/latk_logo.latk");
 
-				draw();
+				render();
 			}
 
-			function draw() {
+			function render() {
 				clearScene();
 
 				if (latk.ready) {
@@ -126,11 +126,11 @@
 					}
 				}
 
-				requestAnimationFrame(draw);
+				requestAnimationFrame(render);
 				renderer.render(scene, camera);
 			}
 
-			setup();
+			init();
 		</script>
 	</body>
 
